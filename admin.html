@@ -7,33 +7,95 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         form { border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #fafafa; }
         label { font-size: 0.9em; font-weight: bold; }
         input, select { width: 100%; margin-bottom: 15px; padding: 8px; box-sizing: border-box; }
-        .btn-submit { background-color: #17a2b8; color: white; width: 100%; padding: 10px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-submit { background-color: #17a2b8; color: white; width: 100%; padding: 10px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-submit:hover { opacity: 0.9; }
+        
+        /* Desain khusus list checkbox siswa */
+        .checkbox-list {
+            max-height: 250px; 
+            overflow-y: auto; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            background: #fff; 
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .checkbox-item {
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 8px; 
+            font-weight: normal; 
+            cursor: pointer;
+            padding: 5px;
+        }
+        .checkbox-item:hover { background-color: #f1f1f1; }
+        .checkbox-item input { width: auto; margin: 0; transform: scale(1.2); cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 1000px;">
+    <div class="container" style="max-width: 1100px;">
         <div class="header">
-            <h2>⚙️ Panel Administrator (Relasional)</h2>
+            <h2>⚙️ Panel Administrator</h2>
             <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
         </div>
 
-        <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd; margin-bottom: 20px;">
-            <h3>Atur Role Pengguna</h3>
-            <form id="form-role">
-                <select id="select-user" required><option value="">Memuat data...</option></select>
-                <select id="select-role" required>
-                    <option value="guru">Guru Mapel</option>
-                    <option value="wali_kelas">Wali Kelas</option>
-                    <option value="admin">Administrator</option>
+        <div class="grid-2">
+            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
+                <h3>Atur Role Pengguna</h3>
+                <form id="form-role">
+                    <select id="select-user" required><option value="">Memuat data...</option></select>
+                    <select id="select-role" required>
+                        <option value="guru">Guru Mapel</option>
+                        <option value="wali_kelas">Wali Kelas</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                    <button type="submit" class="btn-submit" style="background-color: #28a745;">Update Role</button>
+                </form>
+            </div>
+
+            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
+                <h3>Tambah Siswa Baru</h3>
+                <form id="form-siswa">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="nisn" placeholder="NISN" required>
+                        <select id="jk_siswa" required style="width: 50%;">
+                            <option value="L">Laki-laki (L)</option>
+                            <option value="P">Perempuan (P)</option>
+                        </select>
+                    </div>
+                    <input type="text" id="nama_siswa" placeholder="Nama Lengkap Siswa" required>
+                    <button type="submit" class="btn-submit" style="background-color: #0056b3;">Simpan Data Siswa</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px; text-align: left; background: #e9f7fd; border: 1px solid #b8daff;">
+            <h3>🏫 Penempatan Siswa ke Kelas (Plotting)</h3>
+            <p style="font-size: 0.9em; color: #555;">Pilih kelas tujuan, lalu centang nama-nama siswa yang ingin dimasukkan ke kelas tersebut. Langkah ini <strong>wajib</strong> agar nama siswa muncul di akun Guru.</p>
+            
+            <form id="form-anggota-kelas" style="background: transparent; border: none; padding: 0;">
+                <label>Pilih Kelas Tujuan</label>
+                <select id="plot_kelas" required>
+                    <option value="">-- Memuat Kelas... --</option>
                 </select>
-                <button type="submit" class="btn-submit" style="background-color: #28a745;">Update Role</button>
+
+                <label>Pilih Siswa (Bisa centang banyak sekaligus)</label>
+                <div id="list-siswa" class="checkbox-list">
+                    Memuat data siswa...
+                </div>
+
+                <button type="submit" class="btn-submit" style="background-color: #6f42c1; font-size: 1.1em; padding: 12px;">
+                    💾 Masukkan Siswa Terpilih ke Kelas
+                </button>
             </form>
         </div>
 
-        <h3>📦 Kelola Master Data SQL</h3>
+        <h3 style="margin-top: 30px;">📦 Kelola Master Data SQL</h3>
         <div class="grid-3">
             <form id="form-tapel">
                 <label>Tahun Ajaran Baru</label>
@@ -66,19 +128,6 @@
                 <button type="submit" class="btn-submit">Simpan Mapel</button>
             </form>
         </div>
-        
-        <div class="card" style="margin-top: 20px; text-align: left; background: #fff; border: 1px solid #ddd;">
-            <h3>Tambah Siswa Baru</h3>
-            <form id="form-siswa">
-                <input type="text" id="nisn" placeholder="NISN Siswa" required>
-                <input type="text" id="nama_siswa" placeholder="Nama Lengkap Siswa" required>
-                <select id="jk_siswa" required>
-                    <option value="L">Laki-laki (L)</option>
-                    <option value="P">Perempuan (P)</option>
-                </select>
-                <button type="submit" class="btn-submit" style="background-color: #0056b3;">Simpan Data Siswa</button>
-            </form>
-        </div>
     </div>
 
     <script type="module">
@@ -87,9 +136,12 @@
         async function init() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
+            
             loadUsers()
+            loadDataPlotting() // Memanggil fungsi load dropdown kelas dan checkbox siswa
         }
 
+        // --- 1. LOAD DATA USERS ---
         async function loadUsers() {
             const selectUser = document.getElementById('select-user')
             const { data } = await supabase.from('profiles').select('id, full_name, roles')
@@ -99,7 +151,75 @@
             }
         }
 
-        // Simpan Role
+        // --- 2. LOAD DATA UNTUK PLOTTING KELAS ---
+        async function loadDataPlotting() {
+            // Load Dropdown Kelas
+            const plotKelas = document.getElementById('plot_kelas')
+            const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas')
+            if (kelas) {
+                plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'
+                kelas.forEach(k => plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`)
+            }
+
+            // Load Checkbox Siswa
+            const listSiswa = document.getElementById('list-siswa')
+            const { data: siswa } = await supabase.from('siswa').select('id, nama_lengkap, nisn').order('nama_lengkap')
+            if (siswa) {
+                listSiswa.innerHTML = ''
+                siswa.forEach(s => {
+                    listSiswa.innerHTML += `
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="siswa_cek" value="${s.id}"> 
+                            ${s.nama_lengkap} <span style="color:gray; font-size:0.9em;">(${s.nisn})</span>
+                        </label>
+                    `
+                })
+            }
+        }
+
+        // --- 3. SUBMIT PLOTTING SISWA KE KELAS (ANGGOTA KELAS) ---
+        document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const kelasId = document.getElementById('plot_kelas').value
+            const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked')
+            
+            if (checkboxes.length === 0) {
+                return alert("⚠️ Silakan centang minimal satu siswa terlebih dahulu!")
+            }
+
+            const btn = e.target.querySelector('button')
+            btn.textContent = '⏳ Memproses Penempatan...'
+            btn.disabled = true
+
+            let errorCount = 0
+
+            // Looping untuk menyimpan setiap siswa yang dicentang
+            for (let cb of checkboxes) {
+                const { error } = await supabase.from('anggota_kelas').insert([{
+                    siswa_id: cb.value,
+                    kelas_id: kelasId
+                }])
+                
+                // Kode 23505 adalah error PostgreSQL jika data ganda (siswa sudah ada di kelas tsb)
+                // Kita abaikan error ganda agar proses tidak berhenti
+                if (error && error.code !== '23505') { 
+                    errorCount++
+                    console.error("Error plotting:", error.message)
+                }
+            }
+
+            if (errorCount > 0) {
+                alert(`⚠️ Proses selesai, namun ada ${errorCount} data yang gagal (mungkin masalah jaringan).`)
+            } else {
+                alert("✅ Puji Tuhan! Semua siswa yang dicentang berhasil dimasukkan ke kelas.")
+                checkboxes.forEach(cb => cb.checked = false) // Bersihkan centang setelah sukses
+            }
+
+            btn.textContent = '💾 Masukkan Siswa Terpilih ke Kelas'
+            btn.disabled = false
+        })
+
+        // --- 4. SUBMIT FORM LAINNYA ---
         document.getElementById('form-role').addEventListener('submit', async (e) => {
             e.preventDefault()
             const id = document.getElementById('select-user').value
@@ -109,7 +229,6 @@
             else { alert("✅ Role diupdate!"); loadUsers() }
         })
 
-        // Simpan Tahun Ajaran (sesuai SQL)
         document.getElementById('form-tapel').addEventListener('submit', async (e) => {
             e.preventDefault()
             const { error } = await supabase.from('tahun_ajaran').insert([{
@@ -120,17 +239,15 @@
             if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset() }
         })
 
-        // Simpan Kelas (sesuai SQL)
         document.getElementById('form-kelas').addEventListener('submit', async (e) => {
             e.preventDefault()
             const { error } = await supabase.from('kelas').insert([{
                 nama_kelas: document.getElementById('nama_kelas').value,
                 tingkat: document.getElementById('tingkat_kelas').value
             }])
-            if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset() }
+            if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset(); loadDataPlotting(); }
         })
 
-        // Simpan Mapel (sesuai SQL)
         document.getElementById('form-mapel').addEventListener('submit', async (e) => {
             e.preventDefault()
             const { error } = await supabase.from('mata_pelajaran').insert([{
@@ -140,7 +257,6 @@
             if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset() }
         })
 
-        // Simpan Siswa (Sesuai SQL tabel 'siswa')
         document.getElementById('form-siswa').addEventListener('submit', async (e) => {
             e.preventDefault()
             const { error } = await supabase.from('siswa').insert([{
@@ -148,7 +264,7 @@
                 nama_lengkap: document.getElementById('nama_siswa').value,
                 jenis_kelamin: document.getElementById('jk_siswa').value
             }])
-            if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset() }
+            if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset(); loadDataPlotting(); }
         })
 
         init()
