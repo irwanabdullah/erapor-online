@@ -3,77 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Nilai | e-Rapor Online</title>
+    <title>Input Nilai Akademik | e-Rapor Online</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: #fff; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; vertical-align: top; }
-        th { background-color: #d1ecf1; font-size: 0.9em; position: sticky; top: 0; }
-        input[type="number"] { width: 70px; padding: 8px; text-align: center; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; }
-        textarea { width: 100%; height: 60px; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; vertical-align: middle; }
+        th { background-color: #d1ecf1; font-size: 0.9em; }
+        input[type="number"] { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { width: 100%; height: 50px; padding: 5px; box-sizing: border-box; resize: vertical; }
         .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .btn-simpan-semua { background-color: #28a745; color: white; padding: 15px; font-size: 1.1em; width: 100%; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-simpan-semua:hover { background-color: #218838; }
-        .btn-simpan-semua:disabled { background-color: #6c757d; cursor: not-allowed; }
-        #pesan-sistem { text-align: center; font-weight: bold; padding: 10px; border-radius: 4px; display: none; margin-top: 10px; }
+        .btn-simpan-semua { background-color: #28a745; color: white; padding: 15px; font-size: 1.1em; width: 100%; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 1100px;">
+    <div class="container" style="max-width: 1200px;">
         <div class="header">
-            <h2>📝 Input Nilai & Deskripsi (Mode Kelas)</h2>
+            <h2>📝 Input Nilai Akademik (Database Relasional)</h2>
             <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
         </div>
 
         <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
             <div class="filter-grid">
                 <div>
-                    <label><strong>Mata Pelajaran:</strong></label>
-                    <select id="mapel" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
-                        <option value="Pendidikan Agama">Pendidikan Agama</option>
-                        <option value="Pancasila">Pendidikan Pancasila</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="IPA">Ilmu Pengetahuan Alam (IPA)</option>
-                        <option value="IPS">Ilmu Pengetahuan Sosial (IPS)</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="PJOK">PJOK</option>
-                    </select>
+                    <label><strong>Pilih Mata Pelajaran:</strong></label>
+                    <select id="mapel" style="width: 100%; padding: 10px; margin-top: 5px;"><option value="">-- Memuat... --</option></select>
                 </div>
                 <div>
                     <label><strong>Pilih Kelas:</strong></label>
-                    <select id="kelas" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
-                        <option value="">-- Pilih Kelas --</option>
-                        <option value="VII-A">Kelas VII-A</option>
-                        <option value="VII-B">Kelas VII-B</option>
-                        <option value="VIII-A">Kelas VIII-A</option>
-                        <option value="IX-A">Kelas IX-A</option>
-                    </select>
+                    <select id="kelas" style="width: 100%; padding: 10px; margin-top: 5px;"><option value="">-- Memuat... --</option></select>
                 </div>
             </div>
         </div>
         
-        <div id="pesan-sistem"></div>
+        <p id="pesan-sistem" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
 
         <div class="table-container">
             <form id="form-nilai">
                 <table id="tabel-utama" style="display: none;">
                     <thead>
                         <tr>
-                            <th width="25%">Nama Siswa</th>
-                            <th width="15%">Nilai Akhir</th>
-                            <th width="30%">Capaian Tertinggi<br><small>(TP Meningkat)</small></th>
-                            <th width="30%">Capaian Terendah<br><small>(TP Perlu Peningkatan)</small></th>
+                            <th width="20%">Nama Siswa</th>
+                            <th width="10%">Formatif</th>
+                            <th width="10%">Sumatif</th>
+                            <th width="10%">SAS</th>
+                            <th width="10%">Nilai Akhir</th>
+                            <th width="40%">Deskripsi Capaian</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-siswa">
-                        </tbody>
+                    <tbody id="tabel-siswa"></tbody>
                 </table>
-                
-                <button type="submit" id="btn-submit" class="btn-simpan-semua" style="display: none;">
-                    💾 Simpan Semua Nilai Kelas Ini
-                </button>
+                <button type="submit" id="btn-submit" class="btn-simpan-semua" style="display: none;">💾 Simpan Semua Nilai</button>
             </form>
         </div>
     </div>
@@ -82,97 +62,71 @@
         import { supabase, checkSession } from './app.js'
 
         let guruId = null;
-        let dataSiswaSaatIni = []; // Menyimpan data siswa di kelas terpilih
-        let dataNilaiSaatIni = {}; // Menyimpan data nilai lama agar form terisi otomatis
+        let dataAnggotaKelas = []; // Menyimpan ID anggota_kelas
 
-        // 1. Verifikasi Guru
         async function initGuru() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
-
             guruId = session.user.id;
-            const { data } = await supabase.from('profiles').select('roles').eq('id', guruId).single()
 
-            if (!data || !data.roles.includes('guru')) {
-                alert("Akses ditolak. Halaman ini khusus Guru.")
-                window.location.href = 'dashboard.html'
+            // Load Master Data (Mapel & Kelas yang menggunakan UUID)
+            const selectMapel = document.getElementById('mapel')
+            const selectKelas = document.getElementById('kelas')
+
+            const { data: mapelData } = await supabase.from('mata_pelajaran').select('id, nama_mapel')
+            const { data: kelasData } = await supabase.from('kelas').select('id, nama_kelas')
+
+            if (mapelData) {
+                selectMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>'
+                mapelData.forEach(m => selectMapel.innerHTML += `<option value="${m.id}">${m.nama_mapel}</option>`)
+            }
+            if (kelasData) {
+                selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'
+                kelasData.forEach(k => selectKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`)
             }
 
-            // Pasang pendeteksi jika dropdown kelas atau mapel diubah
-            document.getElementById('kelas').addEventListener('change', loadSiswaDanNilai)
-            document.getElementById('mapel').addEventListener('change', loadSiswaDanNilai)
+            document.getElementById('kelas').addEventListener('change', loadSiswa)
+            document.getElementById('mapel').addEventListener('change', loadSiswa)
         }
 
-        // 2. Tarik daftar siswa beserta nilai yang sudah pernah disimpan
-        async function loadSiswaDanNilai() {
-            const mapel = document.getElementById('mapel').value
-            const kelas = document.getElementById('kelas').value
+        async function loadSiswa() {
+            const mapelId = document.getElementById('mapel').value
+            const kelasId = document.getElementById('kelas').value
             const tbody = document.getElementById('tabel-siswa')
             const tabelUtama = document.getElementById('tabel-utama')
             const btnSubmit = document.getElementById('btn-submit')
-            const pesan = document.getElementById('pesan-sistem')
 
-            pesan.style.display = 'none';
-
-            // Jika belum milih kelas, sembunyikan tabel
-            if (!kelas) {
-                tabelUtama.style.display = 'none';
-                btnSubmit.style.display = 'none';
-                return;
+            if (!kelasId || !mapelId) {
+                tabelUtama.style.display = 'none'; btnSubmit.style.display = 'none'; return;
             }
 
-            tbody.innerHTML = '<tr><td colspan="4">Sedang memuat data dari database...</td></tr>'
-            tabelUtama.style.display = 'table';
-            btnSubmit.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data relasional dari database...</td></tr>'
+            tabelUtama.style.display = 'table'; btnSubmit.style.display = 'none';
 
-            // Ambil data siswa berdasarkan kelas
-            const { data: siswa, error: errSiswa } = await supabase.from('siswa').select('*').eq('kelas', kelas).order('nama_lengkap', { ascending: true })
-            
-            if (errSiswa || !siswa || siswa.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color:red;">Tidak ada data siswa di kelas ${kelas}. Pastikan Admin sudah menambahkan kelas untuk siswa.</td></tr>`
+            // Menggunakan sintaks JOIN Supabase untuk tabel anggota_kelas -> siswa
+            const { data: anggota, error } = await supabase
+                .from('anggota_kelas')
+                .select(`id, siswa_id, siswa(nama_lengkap, nisn)`)
+                .eq('kelas_id', kelasId)
+
+            if (error || !anggota || anggota.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Tidak ada siswa di kelas ini. Masukkan siswa ke 'anggota_kelas' terlebih dahulu di database.</td></tr>`
                 return
             }
-            
-            dataSiswaSaatIni = siswa;
 
-            // Ambil data nilai yang sudah ada (untuk mapel dan siswa di kelas ini)
-            const listIdSiswa = siswa.map(s => s.id)
-            const { data: nilaiExisting } = await supabase.from('nilai')
-                .select('*')
-                .eq('mata_pelajaran', mapel)
-                .in('siswa_id', listIdSiswa)
+            dataAnggotaKelas = anggota;
+            tbody.innerHTML = '';
 
-            // Mapping nilai ke dalam object agar mudah dicari
-            dataNilaiSaatIni = {};
-            if (nilaiExisting) {
-                nilaiExisting.forEach(n => {
-                    dataNilaiSaatIni[n.siswa_id] = n;
-                });
-            }
-
-            // Render ke tabel
-            tbody.innerHTML = ''
-            siswa.forEach(s => {
-                // Cek apakah siswa ini sudah punya nilai di database
-                const nilaiLama = dataNilaiSaatIni[s.id] || {};
-                
+            // Render form tabel untuk masing-masing anggota kelas
+            anggota.forEach(a => {
                 const tr = document.createElement('tr')
                 tr.innerHTML = `
-                    <td style="text-align: left;">
-                        <strong>${s.nama_lengkap}</strong><br>
-                        <small style="color:gray;">NISN: ${s.nisn}</small>
-                    </td>
-                    <td>
-                        <input type="number" id="nilai_${s.id}" min="0" max="100" 
-                               value="${nilaiLama.nilai_akhir !== undefined ? nilaiLama.nilai_akhir : ''}" 
-                               placeholder="0-100">
-                    </td>
-                    <td>
-                        <textarea id="tp_naik_${s.id}" placeholder="Capaian tertinggi...">${nilaiLama.tp_meningkat || ''}</textarea>
-                    </td>
-                    <td>
-                        <textarea id="tp_turun_${s.id}" placeholder="Perlu peningkatan...">${nilaiLama.tp_perlu_peningkatan || ''}</textarea>
-                    </td>
+                    <td style="text-align: left;"><strong>${a.siswa.nama_lengkap}</strong></td>
+                    <td><input type="number" id="formatif_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="sumatif_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="sas_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="akhir_${a.id}" placeholder="0"></td>
+                    <td><textarea id="deskripsi_${a.id}" placeholder="Deskripsi..."></textarea></td>
                 `
                 tbody.appendChild(tr)
             })
@@ -180,76 +134,64 @@
             btnSubmit.style.display = 'block';
         }
 
-        // 3. Fungsi Simpan Semua (Bulk Insert/Update)
+        // Simpan Data
         document.getElementById('form-nilai').addEventListener('submit', async (e) => {
             e.preventDefault()
             const btnSubmit = document.getElementById('btn-submit')
-            const mapel = document.getElementById('mapel').value
+            const mapelId = document.getElementById('mapel').value
+            const kelasId = document.getElementById('kelas').value
             const pesan = document.getElementById('pesan-sistem')
 
             btnSubmit.disabled = true;
-            btnSubmit.textContent = '⏳ Menyimpan ke Database... Mohon Tunggu...';
-            pesan.style.display = 'none';
+            btnSubmit.textContent = 'Menyimpan ke tabel nilai_akademik...';
 
-            let adaError = false;
-
-            // Kita gunakan Promise.all agar menyimpan semua siswa sekaligus (paralel dan cepat)
-            const promises = dataSiswaSaatIni.map(async (siswa) => {
-                const nilaiAkhir = document.getElementById(`nilai_${siswa.id}`).value;
-                const tpNaik = document.getElementById(`tp_naik_${siswa.id}`).value;
-                const tpTurun = document.getElementById(`tp_turun_${siswa.id}`).value;
-
-                // Jangan simpan jika nilai akhir kosong
-                if(nilaiAkhir === "") return;
-
-                const nilaiLama = dataNilaiSaatIni[siswa.id];
-
-                if (nilaiLama) {
-                    // Update data
-                    const { error } = await supabase.from('nilai')
-                        .update({ 
-                            nilai_akhir: nilaiAkhir, 
-                            tp_meningkat: tpNaik, 
-                            tp_perlu_peningkatan: tpTurun,
-                            guru_id: guruId 
-                        })
-                        .eq('id', nilaiLama.id)
-                    if (error) adaError = true;
-                } else {
-                    // Insert data baru
-                    const { error } = await supabase.from('nilai')
-                        .insert([{
-                            siswa_id: siswa.id,
-                            guru_id: guruId,
-                            mata_pelajaran: mapel,
-                            nilai_akhir: nilaiAkhir,
-                            tp_meningkat: tpNaik,
-                            tp_perlu_peningkatan: tpTurun
-                        }])
-                    if (error) adaError = true;
-                }
-            });
-
-            // Tunggu semua proses selesai
-            await Promise.all(promises);
-
-            if (adaError) {
-                pesan.style.display = 'block';
-                pesan.style.backgroundColor = '#f8d7da';
-                pesan.style.color = '#721c24';
-                pesan.textContent = '⚠️ Terdapat kesalahan saat menyimpan beberapa data. Silakan coba lagi.';
-            } else {
-                pesan.style.display = 'block';
-                pesan.style.backgroundColor = '#d4edda';
-                pesan.style.color = '#155724';
-                pesan.textContent = '✅ Berhasil! Semua nilai di kelas ini telah tersimpan.';
+            try {
+                // 1. Dapatkan atau Buat Pengampu Mapel (Sesuai SQL)
+                let { data: pengampu } = await supabase.from('pengampu_mapel')
+                    .select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single()
                 
-                // Refresh data background agar database sinkron
-                loadSiswaDanNilai(); 
+                let pengampuId;
+                if (!pengampu) {
+                    const { data: newPengampu, error: errP } = await supabase.from('pengampu_mapel')
+                        .insert([{ guru_id: guruId, mapel_id: mapelId, kelas_id: kelasId }]).select().single()
+                    if (errP) throw errP;
+                    pengampuId = newPengampu.id;
+                } else {
+                    pengampuId = pengampu.id;
+                }
+
+                // 2. Simpan nilai ke tabel nilai_akademik menggunakan Promise.all
+                const promises = dataAnggotaKelas.map(async (anggota) => {
+                    const formatif = document.getElementById(`formatif_${anggota.id}`).value || 0;
+                    const sumatif = document.getElementById(`sumatif_${anggota.id}`).value || 0;
+                    const sas = document.getElementById(`sas_${anggota.id}`).value || 0;
+                    const akhir = document.getElementById(`akhir_${anggota.id}`).value || 0;
+                    const deskripsi = document.getElementById(`deskripsi_${anggota.id}`).value;
+
+                    // Menggunakan UPSERT (Jika kombinasi anggota_kelas & pengampu belum ada, insert. Jika ada, update).
+                    // Catatan: Pastikan Anda menambahkan UNIQUE(anggota_kelas_id, pengampu_mapel_id) di tabel nilai_akademik di SQL nanti.
+                    await supabase.from('nilai_akademik').insert([{
+                        anggota_kelas_id: anggota.id,
+                        pengampu_mapel_id: pengampuId,
+                        nilai_formatif: formatif,
+                        nilai_sumatif: sumatif,
+                        nilai_sas: sas,
+                        nilai_akhir: akhir,
+                        deskripsi_capaian: deskripsi
+                    }]);
+                });
+
+                await Promise.all(promises);
+                
+                pesan.style.color = 'green';
+                pesan.textContent = '✅ Berhasil menyimpan semua nilai akademik!';
+            } catch (error) {
+                pesan.style.color = 'red';
+                pesan.textContent = '⚠️ Error: ' + error.message;
             }
 
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '💾 Simpan Semua Nilai Kelas Ini';
+            btnSubmit.innerHTML = '💾 Simpan Semua Nilai';
         });
 
         initGuru()
