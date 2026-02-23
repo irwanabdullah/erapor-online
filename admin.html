@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | e-Rapor Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>⚙️ Panel Administrator</h2>
+            <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
+        </div>
+
+        <div class="menu-grid">
+            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
+                <h3>Tambah Data Siswa</h3>
+                <p id="msg-siswa" style="font-size: 0.9em;"></p>
+                <form id="form-siswa">
+                    <label>NISN</label>
+                    <input type="text" id="nisn" required placeholder="Contoh: 0051234567">
+                    
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="nama_siswa" required placeholder="Nama Lengkap Siswa">
+                    
+                    <label>Jenis Kelamin</label>
+                    <select id="jk_siswa" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="L">Laki-laki (L)</option>
+                        <option value="P">Perempuan (P)</option>
+                    </select>
+                    
+                    <button type="submit" style="width: 100%;">Simpan Siswa</button>
+                </form>
+            </div>
+
+            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
+                <h3>Atur Role Pengguna</h3>
+                <p style="font-size: 0.8em; color: #666;">Pilih pengguna yang sudah mendaftar untuk diberikan akses khusus.</p>
+                <p id="msg-role" style="font-size: 0.9em;"></p>
+                <form id="form-role">
+                    <label>Pilih Pengguna</label>
+                    <select id="select-user" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Memuat data...</option>
+                    </select>
+
+                    <label>Tetapkan Role</label>
+                    <select id="select-role" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="guru">Guru Mapel</option>
+                        <option value="wali_kelas">Wali Kelas</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                    
+                    <button type="submit" style="width: 100%; background-color: #28a745;">Update Role</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, checkSession } from './app.js'
+
+        // 1. Verifikasi Akses Admin
+        async function verifyAdmin() {
+            const session = await checkSession()
+            if (!session) return window.location.href = 'index.html'
+
+            const { data } = await supabase
+                .from('profiles')
+                .select('roles')
+                .eq('id', session.user.id)
+                .single()
+
+            if (!data || !data.roles.includes('admin')) {
+                alert("Akses ditolak. Halaman ini khusus Administrator.")
+                window.location.href = 'dashboard.html'
+            } else {
+                loadUsers() // Load data guru jika terbukti admin
+            }
+        }
+
+        // 2. Load Data Pengguna (Untuk Dropdown Role)
+        async function loadUsers() {
+            const selectUser = document.getElementById('select-user')
+            const { data, error } = await supabase.from('profiles').select('id, full_name, roles')
+            
+            if (data) {
+                selectUser.innerHTML = '<option value="">-- Pilih Pengguna --</option>'
+                data.forEach(user => {
+                    const option = document.createElement('option')
+                    option.value = user.id
+                    option.textContent = `${user.full_name} (${user.roles.join(', ')})`
+                    selectUser.appendChild(option)
+                })
+            }
+        }
+
+        // 3. Logika Submit Tambah Siswa
+        document.getElementById('form-siswa').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const btn = e.target.querySelector('button')
+            const msg = document.getElementById('msg-siswa')
+            
+            const nisn = document.getElementById('nisn').value
+            const nama_lengkap = document.getElementById('nama_siswa').value
+            const jenis_kelamin = document.getElementById('jk_siswa').value
+
+            btn.textContent = 'Menyimpan...'
+            
+            // Insert ke tabel 'siswa'
+            const { error } = await supabase
+                .from('siswa')
+                .insert([{ nisn, nama_lengkap, jenis_kelamin }])
+
+            if (error) {
+                msg.textContent = "Gagal: " + error.message
+                msg.style.color = "red"
+            } else {
+                msg.textContent = "Data siswa berhasil ditambahkan!"
+                msg.style.color = "green"
+                e.target.reset() // Kosongkan form
+            }
+            btn.textContent = 'Simpan Siswa'
+        })
+
+        // 4. Logika Submit Update Role
+        document.getElementById('form-role').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const btn = e.target.querySelector('button')
+            const msg = document.getElementById('msg-role')
+            
+            const userId = document.getElementById('select-user').value
+            const newRole = document.getElementById('select-role').value
+
+            if(!userId) return alert("Pilih pengguna terlebih dahulu!")
+
+            btn.textContent = 'Memperbarui...'
+            
+            // Update array roles di tabel 'profiles'
+            const { error } = await supabase
+                .from('profiles')
+                .update({ roles: [newRole] }) // Dalam MVP ini kita timpa role lamanya
+                .eq('id', userId)
+
+            if (error) {
+                msg.textContent = "Gagal update: " + error.message
+                msg.style.color = "red"
+            } else {
+                msg.textContent = "Role berhasil diperbarui!"
+                msg.style.color = "green"
+                loadUsers() // Refresh dropdown
+            }
+            btn.textContent = 'Update Role'
+        })
+
+        // Jalankan verifikasi saat halaman dimuat
+        verifyAdmin()
+    </script>
+</body>
+</html>

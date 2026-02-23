@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Input Nilai | e-Rapor Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Halaman Input Nilai Guru</h2>
+            <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
+        </div>
+        
+        <p>Di sini nantinya Anda bisa menampilkan tabel siswa dan form untuk memasukkan nilai formatif/sumatif.</p>
+        
+        <table border="1" width="100%" style="border-collapse: collapse; text-align: left; margin-top: 20px;">
+            <tr style="background: #eee;">
+                <th style="padding: 10px;">Nama Siswa</th>
+                <th style="padding: 10px;">Nilai Formatif</th>
+                <th style="padding: 10px;">Aksi</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">Budi Santoso</td>
+                <td style="padding: 10px;"><input type="text" value="85" style="margin:0;"></td>
+                <td style="padding: 10px;"><button>Simpan</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="module">
+        import { supabase, checkSession } from './app.js'
+
+        async function verifyAccess() {
+            const session = await checkSession()
+            if (!session) return window.location.href = 'index.html'
+
+            const { data } = await supabase
+                .from('profiles')
+                .select('roles')
+                .eq('id', session.user.id)
+                .single()
+
+            // Jika role-nya bukan guru, usir ke dashboard
+            if (!data || !data.roles.includes('guru')) {
+                alert("Akses ditolak. Anda bukan Guru.")
+                window.location.href = 'dashboard.html'
+            }
+        }
+
+        verifyAccess()
+    </script>
+</body>
+</html>
