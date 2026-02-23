@@ -2,53 +2,159 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Input Nilai | e-Rapor Online</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #d1ecf1; }
+        input[type="number"] { width: 70px; padding: 5px; text-align: center; font-weight: bold; }
+        .success-msg { color: green; font-weight: bold; }
+        .error-msg { color: red; font-weight: bold; }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>Halaman Input Nilai Guru</h2>
+            <h2>📝 Input Nilai Mata Pelajaran</h2>
             <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
         </div>
+
+        <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd; margin-bottom: 20px;">
+            <label><strong>Pilih Mata Pelajaran:</strong></label>
+            <select id="mapel" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
+                <option value="Pendidikan Agama">Pendidikan Agama</option>
+                <option value="Pancasila">Pendidikan Pancasila</option>
+                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                <option value="Matematika">Matematika</option>
+                <option value="IPA">Ilmu Pengetahuan Alam (IPA)</option>
+                <option value="IPS">Ilmu Pengetahuan Sosial (IPS)</option>
+                <option value="Bahasa Inggris">Bahasa Inggris</option>
+                <option value="PJOK">PJOK</option>
+            </select>
+        </div>
         
-        <p>Di sini nantinya Anda bisa menampilkan tabel siswa dan form untuk memasukkan nilai formatif/sumatif.</p>
-        
-        <table border="1" width="100%" style="border-collapse: collapse; text-align: left; margin-top: 20px;">
-            <tr style="background: #eee;">
-                <th style="padding: 10px;">Nama Siswa</th>
-                <th style="padding: 10px;">Nilai Formatif</th>
-                <th style="padding: 10px;">Aksi</th>
-            </tr>
-            <tr>
-                <td style="padding: 10px;">Budi Santoso</td>
-                <td style="padding: 10px;"><input type="text" value="85" style="margin:0;"></td>
-                <td style="padding: 10px;"><button>Simpan</button></td>
-            </tr>
-        </table>
+        <p id="pesan-sistem" style="text-align: center; height: 20px;"></p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Siswa</th>
+                        <th>Nilai Formatif (Harian)</th>
+                        <th>Nilai Sumatif (Ujian)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-siswa">
+                    <tr><td colspan="4">Memuat data siswa...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
         import { supabase, checkSession } from './app.js'
 
-        async function verifyAccess() {
+        let guruId = null;
+
+        // 1. Verifikasi apakah yang login benar-benar guru
+        async function initGuru() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
 
-            const { data } = await supabase
-                .from('profiles')
-                .select('roles')
-                .eq('id', session.user.id)
-                .single()
+            guruId = session.user.id;
 
-            // Jika role-nya bukan guru, usir ke dashboard
+            const { data } = await supabase.from('profiles').select('roles').eq('id', guruId).single()
+
             if (!data || !data.roles.includes('guru')) {
-                alert("Akses ditolak. Anda bukan Guru.")
+                alert("Akses ditolak. Halaman ini khusus Guru.")
                 window.location.href = 'dashboard.html'
+            } else {
+                loadSiswa()
             }
         }
 
-        verifyAccess()
+        // 2. Tarik daftar siswa dari database
+        async function loadSiswa() {
+            const tbody = document.getElementById('tabel-siswa')
+            const { data, error } = await supabase.from('siswa').select('*').order('nama_lengkap', { ascending: true })
+            
+            if (error || !data.length) {
+                tbody.innerHTML = '<tr><td colspan="4">Belum ada data siswa. Minta Admin untuk menambahkan.</td></tr>'
+                return
+            }
+
+            tbody.innerHTML = ''
+            
+            // Tampilkan siswa satu per satu ke dalam baris tabel
+            data.forEach(siswa => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td style="text-align: left;"><strong>${siswa.nama_lengkap}</strong><br><small>NISN: ${siswa.nisn}</small></td>
+                    <td><input type="number" id="formatif_${siswa.id}" value="0" min="0" max="100"></td>
+                    <td><input type="number" id="sumatif_${siswa.id}" value="0" min="0" max="100"></td>
+                    <td>
+                        <button onclick="simpanNilai('${siswa.id}', '${siswa.nama_lengkap}')" style="background-color: #28a745;">Simpan</button>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        }
+
+        // 3. Fungsi untuk menyimpan nilai ke database (Bisa Insert baru / Update yang sudah ada)
+        window.simpanNilai = async (siswaId, namaSiswa) => {
+            const mapel = document.getElementById('mapel').value
+            const formatif = document.getElementById(`formatif_${siswaId}`).value
+            const sumatif = document.getElementById(`sumatif_${siswaId}`).value
+            const pesan = document.getElementById('pesan-sistem')
+
+            pesan.className = ''
+            pesan.style.color = 'blue'
+            pesan.textContent = `Memproses nilai ${namaSiswa}...`
+
+            // Cek apakah nilai untuk siswa ini dan mapel ini sudah pernah diinput sebelumnya
+            const { data: existing } = await supabase.from('nilai')
+                .select('id')
+                .eq('siswa_id', siswaId)
+                .eq('mata_pelajaran', mapel)
+                .single()
+
+            let dbError;
+
+            if (existing) {
+                // Jika sudah ada, lakukan UPDATE (Timpa nilai lama)
+                const { error } = await supabase.from('nilai')
+                    .update({ nilai_formatif: formatif, nilai_sumatif: sumatif, guru_id: guruId })
+                    .eq('id', existing.id)
+                dbError = error
+            } else {
+                // Jika belum ada, lakukan INSERT (Buat baris baru)
+                const { error } = await supabase.from('nilai')
+                    .insert([{
+                        siswa_id: siswaId,
+                        guru_id: guruId,
+                        mata_pelajaran: mapel,
+                        nilai_formatif: formatif,
+                        nilai_sumatif: sumatif
+                    }])
+                dbError = error
+            }
+
+            // Tampilkan hasil sukses atau gagal
+            if (dbError) {
+                pesan.className = 'error-msg'
+                pesan.textContent = "Gagal menyimpan: " + dbError.message
+            } else {
+                pesan.className = 'success-msg'
+                pesan.textContent = `✔ Berhasil menyimpan nilai ${mapel} untuk ${namaSiswa}!`
+                setTimeout(() => pesan.textContent = '', 3500) // Hilangkan pesan setelah 3.5 detik
+            }
+        }
+
+        initGuru()
     </script>
 </body>
 </html>
