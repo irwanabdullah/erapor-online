@@ -3,158 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin | e-Rapor Online</title>
+    <title>Input Nilai Akademik | e-Rapor Online</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .table-container { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; vertical-align: middle; }
+        th { background-color: #d1ecf1; font-size: 0.9em; }
+        input[type="number"] { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { width: 100%; height: 50px; padding: 5px; box-sizing: border-box; resize: vertical; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .btn-simpan-semua { background-color: #28a745; color: white; padding: 15px; font-size: 1.1em; width: 100%; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="max-width: 1200px;">
         <div class="header">
-            <h2>⚙️ Panel Administrator</h2>
+            <h2>📝 Input Nilai Akademik (Database Relasional)</h2>
             <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
         </div>
 
-        <div class="menu-grid">
-            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
-                <h3>Tambah Data Siswa</h3>
-                <p id="msg-siswa" style="font-size: 0.9em;"></p>
-                <form id="form-siswa">
-                    <label>NISN</label>
-                    <input type="text" id="nisn" required placeholder="Contoh: 0051234567">
-                    
-                    <label>Nama Lengkap</label>
-                    <input type="text" id="nama_siswa" required placeholder="Nama Lengkap Siswa">
-                    
-                    <label>Jenis Kelamin</label>
-                    <select id="jk_siswa" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="L">Laki-laki (L)</option>
-                        <option value="P">Perempuan (P)</option>
-                    </select>
-                    
-                    <button type="submit" style="width: 100%;">Simpan Siswa</button>
-                </form>
+        <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
+            <div class="filter-grid">
+                <div>
+                    <label><strong>Pilih Mata Pelajaran:</strong></label>
+                    <select id="mapel" style="width: 100%; padding: 10px; margin-top: 5px;"><option value="">-- Memuat... --</option></select>
+                </div>
+                <div>
+                    <label><strong>Pilih Kelas:</strong></label>
+                    <select id="kelas" style="width: 100%; padding: 10px; margin-top: 5px;"><option value="">-- Memuat... --</option></select>
+                </div>
             </div>
+        </div>
+        
+        <p id="pesan-sistem" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
 
-            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
-                <h3>Atur Role Pengguna</h3>
-                <p style="font-size: 0.8em; color: #666;">Pilih pengguna yang sudah mendaftar untuk diberikan akses khusus.</p>
-                <p id="msg-role" style="font-size: 0.9em;"></p>
-                <form id="form-role">
-                    <label>Pilih Pengguna</label>
-                    <select id="select-user" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">Memuat data...</option>
-                    </select>
-
-                    <label>Tetapkan Role</label>
-                    <select id="select-role" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="guru">Guru Mapel</option>
-                        <option value="wali_kelas">Wali Kelas</option>
-                        <option value="admin">Administrator</option>
-                    </select>
-                    
-                    <button type="submit" style="width: 100%; background-color: #28a745;">Update Role</button>
-                </form>
-            </div>
+        <div class="table-container">
+            <form id="form-nilai">
+                <table id="tabel-utama" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th width="20%">Nama Siswa</th>
+                            <th width="10%">Formatif</th>
+                            <th width="10%">Sumatif</th>
+                            <th width="10%">SAS</th>
+                            <th width="10%">Nilai Akhir</th>
+                            <th width="40%">Deskripsi Capaian</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-siswa"></tbody>
+                </table>
+                <button type="submit" id="btn-submit" class="btn-simpan-semua" style="display: none;">💾 Simpan Semua Nilai</button>
+            </form>
         </div>
     </div>
 
     <script type="module">
         import { supabase, checkSession } from './app.js'
 
-        // 1. Verifikasi Akses Admin
-        async function verifyAdmin() {
+        let guruId = null;
+        let dataAnggotaKelas = []; // Menyimpan ID anggota_kelas
+
+        async function initGuru() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
+            guruId = session.user.id;
 
-            const { data } = await supabase
-                .from('profiles')
-                .select('roles')
-                .eq('id', session.user.id)
-                .single()
+            // Load Master Data (Mapel & Kelas yang menggunakan UUID)
+            const selectMapel = document.getElementById('mapel')
+            const selectKelas = document.getElementById('kelas')
 
-            if (!data || !data.roles.includes('admin')) {
-                alert("Akses ditolak. Halaman ini khusus Administrator.")
-                window.location.href = 'dashboard.html'
-            } else {
-                loadUsers() // Load data guru jika terbukti admin
+            const { data: mapelData } = await supabase.from('mata_pelajaran').select('id, nama_mapel')
+            const { data: kelasData } = await supabase.from('kelas').select('id, nama_kelas')
+
+            if (mapelData) {
+                selectMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>'
+                mapelData.forEach(m => selectMapel.innerHTML += `<option value="${m.id}">${m.nama_mapel}</option>`)
             }
+            if (kelasData) {
+                selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'
+                kelasData.forEach(k => selectKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`)
+            }
+
+            document.getElementById('kelas').addEventListener('change', loadSiswa)
+            document.getElementById('mapel').addEventListener('change', loadSiswa)
         }
 
-        // 2. Load Data Pengguna (Untuk Dropdown Role)
-        async function loadUsers() {
-            const selectUser = document.getElementById('select-user')
-            const { data, error } = await supabase.from('profiles').select('id, full_name, roles')
-            
-            if (data) {
-                selectUser.innerHTML = '<option value="">-- Pilih Pengguna --</option>'
-                data.forEach(user => {
-                    const option = document.createElement('option')
-                    option.value = user.id
-                    option.textContent = `${user.full_name} (${user.roles.join(', ')})`
-                    selectUser.appendChild(option)
-                })
+        async function loadSiswa() {
+            const mapelId = document.getElementById('mapel').value
+            const kelasId = document.getElementById('kelas').value
+            const tbody = document.getElementById('tabel-siswa')
+            const tabelUtama = document.getElementById('tabel-utama')
+            const btnSubmit = document.getElementById('btn-submit')
+
+            if (!kelasId || !mapelId) {
+                tabelUtama.style.display = 'none'; btnSubmit.style.display = 'none'; return;
             }
+
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data relasional dari database...</td></tr>'
+            tabelUtama.style.display = 'table'; btnSubmit.style.display = 'none';
+
+            // Menggunakan sintaks JOIN Supabase untuk tabel anggota_kelas -> siswa
+            const { data: anggota, error } = await supabase
+                .from('anggota_kelas')
+                .select(`id, siswa_id, siswa(nama_lengkap, nisn)`)
+                .eq('kelas_id', kelasId)
+
+            if (error || !anggota || anggota.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Tidak ada siswa di kelas ini. Masukkan siswa ke 'anggota_kelas' terlebih dahulu di database.</td></tr>`
+                return
+            }
+
+            dataAnggotaKelas = anggota;
+            tbody.innerHTML = '';
+
+            // Render form tabel untuk masing-masing anggota kelas
+            anggota.forEach(a => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td style="text-align: left;"><strong>${a.siswa.nama_lengkap}</strong></td>
+                    <td><input type="number" id="formatif_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="sumatif_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="sas_${a.id}" placeholder="0"></td>
+                    <td><input type="number" id="akhir_${a.id}" placeholder="0"></td>
+                    <td><textarea id="deskripsi_${a.id}" placeholder="Deskripsi..."></textarea></td>
+                `
+                tbody.appendChild(tr)
+            })
+
+            btnSubmit.style.display = 'block';
         }
 
-        // 3. Logika Submit Tambah Siswa
-        document.getElementById('form-siswa').addEventListener('submit', async (e) => {
+        // Simpan Data
+        document.getElementById('form-nilai').addEventListener('submit', async (e) => {
             e.preventDefault()
-            const btn = e.target.querySelector('button')
-            const msg = document.getElementById('msg-siswa')
-            
-            const nisn = document.getElementById('nisn').value
-            const nama_lengkap = document.getElementById('nama_siswa').value
-            const jenis_kelamin = document.getElementById('jk_siswa').value
+            const btnSubmit = document.getElementById('btn-submit')
+            const mapelId = document.getElementById('mapel').value
+            const kelasId = document.getElementById('kelas').value
+            const pesan = document.getElementById('pesan-sistem')
 
-            btn.textContent = 'Menyimpan...'
-            
-            // Insert ke tabel 'siswa'
-            const { error } = await supabase
-                .from('siswa')
-                .insert([{ nisn, nama_lengkap, jenis_kelamin }])
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Menyimpan ke tabel nilai_akademik...';
 
-            if (error) {
-                msg.textContent = "Gagal: " + error.message
-                msg.style.color = "red"
-            } else {
-                msg.textContent = "Data siswa berhasil ditambahkan!"
-                msg.style.color = "green"
-                e.target.reset() // Kosongkan form
+            try {
+                // 1. Dapatkan atau Buat Pengampu Mapel (Sesuai SQL)
+                let { data: pengampu } = await supabase.from('pengampu_mapel')
+                    .select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single()
+                
+                let pengampuId;
+                if (!pengampu) {
+                    const { data: newPengampu, error: errP } = await supabase.from('pengampu_mapel')
+                        .insert([{ guru_id: guruId, mapel_id: mapelId, kelas_id: kelasId }]).select().single()
+                    if (errP) throw errP;
+                    pengampuId = newPengampu.id;
+                } else {
+                    pengampuId = pengampu.id;
+                }
+
+                // 2. Simpan nilai ke tabel nilai_akademik menggunakan Promise.all
+                const promises = dataAnggotaKelas.map(async (anggota) => {
+                    const formatif = document.getElementById(`formatif_${anggota.id}`).value || 0;
+                    const sumatif = document.getElementById(`sumatif_${anggota.id}`).value || 0;
+                    const sas = document.getElementById(`sas_${anggota.id}`).value || 0;
+                    const akhir = document.getElementById(`akhir_${anggota.id}`).value || 0;
+                    const deskripsi = document.getElementById(`deskripsi_${anggota.id}`).value;
+
+                    // Menggunakan UPSERT (Jika kombinasi anggota_kelas & pengampu belum ada, insert. Jika ada, update).
+                    // Catatan: Pastikan Anda menambahkan UNIQUE(anggota_kelas_id, pengampu_mapel_id) di tabel nilai_akademik di SQL nanti.
+                    await supabase.from('nilai_akademik').insert([{
+                        anggota_kelas_id: anggota.id,
+                        pengampu_mapel_id: pengampuId,
+                        nilai_formatif: formatif,
+                        nilai_sumatif: sumatif,
+                        nilai_sas: sas,
+                        nilai_akhir: akhir,
+                        deskripsi_capaian: deskripsi
+                    }]);
+                });
+
+                await Promise.all(promises);
+                
+                pesan.style.color = 'green';
+                pesan.textContent = '✅ Berhasil menyimpan semua nilai akademik!';
+            } catch (error) {
+                pesan.style.color = 'red';
+                pesan.textContent = '⚠️ Error: ' + error.message;
             }
-            btn.textContent = 'Simpan Siswa'
-        })
 
-        // 4. Logika Submit Update Role
-        document.getElementById('form-role').addEventListener('submit', async (e) => {
-            e.preventDefault()
-            const btn = e.target.querySelector('button')
-            const msg = document.getElementById('msg-role')
-            
-            const userId = document.getElementById('select-user').value
-            const newRole = document.getElementById('select-role').value
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '💾 Simpan Semua Nilai';
+        });
 
-            if(!userId) return alert("Pilih pengguna terlebih dahulu!")
-
-            btn.textContent = 'Memperbarui...'
-            
-            // Update array roles di tabel 'profiles'
-            const { error } = await supabase
-                .from('profiles')
-                .update({ roles: [newRole] }) // Dalam MVP ini kita timpa role lamanya
-                .eq('id', userId)
-
-            if (error) {
-                msg.textContent = "Gagal update: " + error.message
-                msg.style.color = "red"
-            } else {
-                msg.textContent = "Role berhasil diperbarui!"
-                msg.style.color = "green"
-                loadUsers() // Refresh dropdown
-            }
-            btn.textContent = 'Update Role'
-        })
-
-        // Jalankan verifikasi saat halaman dimuat
-        verifyAdmin()
+        initGuru()
     </script>
 </body>
 </html>
