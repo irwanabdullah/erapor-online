@@ -36,6 +36,7 @@
         .checkbox-item:hover { background-color: #f1f1f1; }
         .checkbox-item input { width: auto; margin: 0; transform: scale(1.2); cursor: pointer; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
     <div class="container" style="max-width: 1100px;">
@@ -58,21 +59,32 @@
                 </form>
             </div>
 
-            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd;">
-                <h3>Tambah Siswa Baru</h3>
-                <form id="form-siswa">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="nisn" placeholder="NISN" required>
-                        <select id="jk_siswa" required style="width: 50%;">
-                            <option value="L">Laki-laki (L)</option>
-                            <option value="P">Perempuan (P)</option>
-                        </select>
+            <div class="card" style="text-align: left; background: #fff; border: 1px solid #ddd; grid-column: span 2;">
+                <h3>👨‍🎓 Kelola Data Siswa</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <form id="form-siswa" style="background: #f8f9fa;">
+                        <label>Input Manual</label>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <input type="text" id="nisn" placeholder="NISN" required>
+                            <select id="jk_siswa" required style="width: 50%;">
+                                <option value="L">Laki-laki (L)</option>
+                                <option value="P">Perempuan (P)</option>
+                            </select>
+                        </div>
+                        <input type="text" id="nama_siswa" placeholder="Nama Lengkap Siswa" required>
+                        <button type="submit" class="btn-submit" style="background-color: #0056b3;">Simpan 1 Siswa</button>
+                    </form>
+
+                    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #e9f7fd;">
+                        <label style="color: #0c5460;"><strong>🚀 Import Massal via Excel (CSV)</strong></label>
+                        <p style="font-size: 0.8em; margin-bottom: 10px;">Format wajib: <b>nisn, nama, jk, kelas</b> <br><i>(Simpan file Excel sebagai .csv)</i></p>
+                        <input type="file" id="file-csv" accept=".csv" style="background: white; border: 1px solid #ccc;">
+                        <button id="btn-import-csv" class="btn-submit" style="background-color: #28a745;">Mulai Import 1000+ Siswa</button>
+                        <p id="status-import" style="font-size: 0.85em; font-weight: bold; margin-top: 10px; color: #d32f2f;"></p>
                     </div>
-                    <input type="text" id="nama_siswa" placeholder="Nama Lengkap Siswa" required>
-                    <button type="submit" class="btn-submit" style="background-color: #0056b3;">Simpan Data Siswa</button>
-                </form>
+                </div>
             </div>
-        </div>
 
         <div class="card" style="margin-top: 20px; text-align: left; background: #e9f7fd; border: 1px solid #b8daff;">
             <h3>🏫 Penempatan Siswa ke Kelas (Plotting)</h3>
@@ -267,7 +279,73 @@
             if (error) alert("Error: " + error.message); else { alert("✅ Berhasil!"); e.target.reset(); loadDataPlotting(); }
         })
 
+        // --- FITUR IMPORT MASSAL CSV ---
+        document.getElementById('btn-import-csv').addEventListener('click', async () => {
+            const fileInput = document.getElementById('file-csv');
+            const statusText = document.getElementById('status-import');
+            
+            if (!fileInput.files.length) return alert("Pilih file CSV terlebih dahulu!");
+            
+            statusText.style.color = 'blue';
+            statusText.textContent = '⏳ Sedang membaca file...';
+
+            Papa.parse(fileInput.files[0], {
+                header: true,      // Menggunakan baris pertama sebagai nama kolom
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const dataSiswa = results.data; // Array dari Excel
+                    statusText.textContent = `⏳ Memproses ${dataSiswa.length} siswa. Jangan tutup halaman ini...`;
+                    
+                    // 1. Ambil data kelas yang ada di database untuk dicocokkan
+                    const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas');
+                    
+                    let sukses = 0;
+                    let gagal = 0;
+
+                    // 2. Looping 1000 data satu per satu
+                    for (let row of dataSiswa) {
+                        try {
+                            // Cek kelengkapan baris Excel
+                            if(!row.nisn || !row.nama || !row.jk || !row.kelas) {
+                                gagal++; continue;
+                            }
+
+                            // Cari ID kelas berdasarkan nama kelas di Excel
+                            const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase());
+                            
+                            // Insert Data Siswa ke tabel 'siswa'
+                            const { data: siswaBaru, error: errSiswa } = await supabase.from('siswa')
+                                .insert([{ 
+                                    nisn: row.nisn, 
+                                    nama_lengkap: row.nama, 
+                                    jenis_kelamin: row.jk.toUpperCase() 
+                                }])
+                                .select('id').single();
+
+                            if (errSiswa) { gagal++; continue; } // Jika NISN ganda/error, lewati
+
+                            // Jika kelas ditemukan, langsung masukkan siswa ke tabel 'anggota_kelas' (Plotting otomatis!)
+                            if (kelasTujuan && siswaBaru) {
+                                await supabase.from('anggota_kelas').insert([{
+                                    siswa_id: siswaBaru.id,
+                                    kelas_id: kelasTujuan.id
+                                }]);
+                            }
+                            sukses++;
+                        } catch (e) {
+                            gagal++;
+                        }
+                    }
+
+                    statusText.style.color = 'green';
+                    statusText.textContent = `✅ Selesai! Sukses: ${sukses} siswa. Gagal/Dilewati: ${gagal} data.`;
+                    loadDataPlotting(); // Refresh checkbox jika diperlukan
+                }
+            });
+        });
+        
         init()
     </script>
 </body>
 </html>
+
