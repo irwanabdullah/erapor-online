@@ -44,6 +44,12 @@
             .no-print { display: none; } 
             .footer-print { display: flex; }
         }
+            /* Penghitung Halaman CSS */
+        body { counter-reset: halaman; }
+        .page-number::after { 
+            counter-increment: halaman; 
+            content: counter(halaman); 
+        }
     </style>
 </head>
 <body>
@@ -148,15 +154,9 @@
             setTimeout(() => window.print(), 1000);
         }
         loadRaporP5();
-
-        /* Penghitung Halaman CSS */
-        body { counter-reset: halaman; }
-        .page-number::after { 
-            counter-increment: halaman; 
-            content: counter(halaman); 
-        }
         
     </script>
 </body>
 </html>
+
 
