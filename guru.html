@@ -64,7 +64,7 @@
             <li class="nav-item active" style="display: flex;" onclick="switchTab('tab-home', this)">🏠 Dashboard</li>
             
             <li class="nav-item" id="nav-guru" onclick="switchTab('tab-akademik', this)">📝 Nilai Akademik</li>
-            <li class="nav-item" id="nav-walas" onclick="switchTab('tab-walas', this)">👨‍🏫 Wali Kelas (Cetak)</li>
+            <li class="nav-item" id="nav-walas" onclick="switchTab('tab-walas', this)">👨‍🏫 Wali Kelas (Leger & Cetak)</li>
             <li class="nav-item" id="nav-p5" onclick="switchTab('tab-p5', this)">🌟 Proyek P5</li>
             <li class="nav-item" id="nav-ekskul" onclick="switchTab('tab-ekskul', this)">⚽ Ekstrakurikuler</li>
             
@@ -87,22 +87,17 @@
                 <div class="card" style="text-align: center; padding: 40px;">
                     <h2>Selamat Datang di Portal Input e-Rapor</h2>
                     <p style="color: var(--text-muted);">Menu di sebelah kiri telah disesuaikan secara otomatis berdasarkan jabatan / role yang diberikan oleh Administrator kepada Anda.</p>
-                    <p style="color: var(--danger); font-size: 0.9rem; margin-top: 20px;">⚠️ <b>Peringatan:</b> Silakan lengkapi data NIP Anda di menu <b>"Profil & NIP Saya"</b> agar nama Anda tercetak sempurna pada rapor.</p>
                 </div>
             </div>
 
             <div id="tab-profil" class="tab-section">
                 <div class="card" style="max-width: 500px; margin: 0 auto; border-top: 4px solid var(--dark);">
                     <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">👤 Pengaturan Profil Guru</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Sesuaikan ejaan nama dan NIP Anda di sini. Data ini akan langsung tercetak di bagian tanda tangan Rapor.</p>
-                    
                     <form id="form-profil">
                         <label>Nama Lengkap (Beserta Gelar)</label>
-                        <input type="text" id="prof_nama" placeholder="Contoh: Budi Santoso, S.Pd., M.Pd." required>
-                        
+                        <input type="text" id="prof_nama" required>
                         <label>NIP (Nomor Induk Pegawai)</label>
-                        <input type="text" id="prof_nip" placeholder="Contoh: 19800101 200501 1 002 (Kosongkan atau beri tanda strip '-' jika Non-PNS)">
-                        
+                        <input type="text" id="prof_nip" placeholder="Kosongkan jika Non-PNS">
                         <button type="submit" id="btn-simpan-profil" class="btn btn-dark" style="width: 100%; margin-top: 20px;">💾 Simpan Profil</button>
                     </form>
                 </div>
@@ -138,7 +133,10 @@
                 <div class="card">
                     <div class="filter-grid">
                         <div><label>Pilih Kelas Binaan Anda</label><select id="wl_kelas" class="kelas-dropdown"><option value="">- Pilih Kelas -</option></select></div>
-                        <div style="display: flex; align-items: flex-end;"><button class="btn btn-primary" style="width: 100%;" onclick="loadSiswaWalas()">Tampilkan Siswa</button></div>
+                        <div style="display: flex; gap: 10px; align-items: flex-end;">
+                            <button class="btn btn-primary" style="width: 50%;" onclick="loadSiswaWalas()">🔍 Tampilkan Siswa</button>
+                            <button class="btn btn-success" style="width: 50%;" onclick="downloadLegerKelas()">📊 Download Leger (Excel)</button>
+                        </div>
                     </div>
                 </div>
 
@@ -223,7 +221,6 @@
         let userRoles = [];
         let curAnggotaKelas = []; 
 
-        // --- UI NAVIGATION ---
         window.switchTab = (tabId, element) => {
             document.querySelectorAll('.tab-section').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -232,53 +229,34 @@
             document.getElementById('page-title').textContent = element.innerText;
         };
 
-        // --- INITIALIZATION & ROLE CHECK ---
         async function init() {
             const session = await checkSession();
             if (!session) return window.location.href = 'index.html';
             guruId = session.user.id;
 
-            // 1. Ambil Data Profil dari Database (Termasuk NIP)
             const { data: profile } = await supabase.from('profiles').select('full_name, roles, nip').eq('id', guruId).single();
             if (profile) {
                 document.getElementById('user-info').textContent = `Halo, ${profile.full_name}`;
                 userRoles = profile.roles || [];
                 
-                // Isi otomatis kotak input di Tab Profil
                 document.getElementById('prof_nama').value = profile.full_name || '';
                 document.getElementById('prof_nip').value = profile.nip || '';
                 
-                // 2. Tampilkan Menu Berdasarkan Role
                 if(userRoles.includes('admin') || userRoles.includes('guru')) document.getElementById('nav-guru').style.display = 'flex';
                 if(userRoles.includes('admin') || userRoles.includes('wali_kelas')) document.getElementById('nav-walas').style.display = 'flex';
                 if(userRoles.includes('admin') || userRoles.includes('koordinator_p5')) document.getElementById('nav-p5').style.display = 'flex';
                 if(userRoles.includes('admin') || userRoles.includes('pembina_ekstra')) document.getElementById('nav-ekskul').style.display = 'flex';
             }
-
-            // 3. Load Master Data Dropdowns
             loadMasterDropdowns();
         }
 
-        // ==========================================
-        // MODULE: SIMPAN PROFIL & NIP
-        // ==========================================
         document.getElementById('form-profil').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-simpan-profil'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
-            
-            const namaBaru = document.getElementById('prof_nama').value;
-            const nipBaru = document.getElementById('prof_nip').value;
-
-            // Update ke tabel profiles
+            const namaBaru = document.getElementById('prof_nama').value; const nipBaru = document.getElementById('prof_nip').value;
             const { error } = await supabase.from('profiles').update({ full_name: namaBaru, nip: nipBaru }).eq('id', guruId);
-            
-            if (error) {
-                alert("Gagal menyimpan profil: " + error.message);
-            } else {
-                alert("✅ Profil berhasil diupdate! Nama dan NIP Anda akan tercetak di Rapor.");
-                document.getElementById('user-info').textContent = `Halo, ${namaBaru}`; // Update nama di pojok kanan atas
-            }
-            
+            if (error) alert("Gagal menyimpan: " + error.message);
+            else { alert("✅ Profil berhasil diupdate!"); document.getElementById('user-info').textContent = `Halo, ${namaBaru}`; }
             btn.textContent = '💾 Simpan Profil'; btn.disabled = false;
         });
 
@@ -290,42 +268,116 @@
                 const { data: mapel } = await supabase.from('mata_pelajaran').select('id, nama_mapel').order('nama_mapel');
                 const selMapel = document.getElementById('ak_mapel'); if(mapel) mapel.forEach(m => selMapel.innerHTML += `<option value="${m.id}">${m.nama_mapel}</option>`);
             }
-
             if (userRoles.includes('koordinator_p5') || userRoles.includes('admin')) {
                 const { data: p5 } = await supabase.from('proyek_p5').select('id, nama_proyek, tema');
                 const selP5 = document.getElementById('p5_proyek'); if(p5) p5.forEach(p => selP5.innerHTML += `<option value="${p.id}">${p.nama_proyek} (${p.tema})</option>`);
             }
-
             if (userRoles.includes('pembina_ekstra') || userRoles.includes('admin')) {
                 const { data: eks } = await supabase.from('ekstrakurikuler').select('id, nama_ekskul');
                 const selEks = document.getElementById('ek_nama');
                 if(eks && eks.length > 0) eks.forEach(e => selEks.innerHTML += `<option value="${e.id}">${e.nama_ekskul}</option>`);
-                else selEks.innerHTML = '<option value="">(Belum ada data ekskul)</option>';
             }
         }
 
         // ==========================================
-        // MODULE 1: NILAI AKADEMIK (GURU)
+        // FITUR BARU: DOWNLOAD LEGER KELAS (WALI KELAS)
+        // ==========================================
+        window.downloadLegerKelas = async () => {
+            const kelasId = document.getElementById('wl_kelas').value;
+            if(!kelasId) return alert("⚠️ Silakan pilih Kelas Binaan Anda terlebih dahulu di kotak sebelah kiri.");
+            
+            const dropdown = document.getElementById('wl_kelas');
+            const kelasName = dropdown.options[dropdown.selectedIndex].text;
+            
+            // 1. Ambil data Siswa di kelas tersebut
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+            if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa di kelas ini.");
+            const anggotaIds = anggota.map(a => a.id);
+
+            // 2. Ambil Mata Pelajaran yang diajarkan di kelas ini
+            const { data: pgm } = await supabase.from('pengampu_mapel').select('id, mata_pelajaran(nama_mapel)').eq('kelas_id', kelasId);
+            let mapelMap = {}; // Untuk simpan pengampu_id -> nama_mapel
+            let mapelArray = []; // Daftar nama mapel untuk header Excel
+            
+            if(pgm) {
+                pgm.forEach(p => {
+                    mapelMap[p.id] = p.mata_pelajaran.nama_mapel;
+                    if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel);
+                });
+            }
+            mapelArray.sort(); // Urutkan nama mapel sesuai abjad
+
+            // 3. Ambil Semua Nilai Akademik
+            const { data: nilai } = await supabase.from('nilai_akademik').select('anggota_kelas_id, pengampu_mapel_id, nilai_akhir').in('anggota_kelas_id', anggotaIds);
+            
+            // 4. Ambil Data Absensi
+            const { data: absen } = await supabase.from('absensi_catatan').select('anggota_kelas_id, sakit, izin, tanpa_keterangan').in('anggota_kelas_id', anggotaIds);
+            let mapAbsen = {};
+            if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
+
+            // 5. Susun Data untuk Excel (CSV)
+            let dataLeger = anggota.map(a => {
+                let rowData = {
+                    "NISN": a.siswa.nisn,
+                    "NAMA SISWA": a.siswa.nama_lengkap
+                };
+                
+                let totalNilai = 0;
+                let jumlahMapelDiisi = 0;
+
+                // Buat kolom nilai untuk semua mapel
+                mapelArray.forEach(m => { rowData[m] = ''; });
+
+                // Isi nilai yang sudah diinput guru
+                if (nilai) {
+                    let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id);
+                    nilaiAnak.forEach(n => {
+                        let namaMapel = mapelMap[n.pengampu_mapel_id];
+                        let nilaiAkhir = n.nilai_akhir || 0;
+                        if (namaMapel) {
+                            rowData[namaMapel] = nilaiAkhir;
+                            totalNilai += parseFloat(nilaiAkhir);
+                            jumlahMapelDiisi++;
+                        }
+                    });
+                }
+
+                // Hitung Total dan Rata-rata
+                rowData["TOTAL NILAI"] = totalNilai;
+                rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
+
+                // Masukkan Absensi
+                let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 };
+                rowData["SAKIT"] = abs.sakit || 0;
+                rowData["IZIN"] = abs.izin || 0;
+                rowData["ALPA"] = abs.tanpa_keterangan || 0;
+
+                return rowData;
+            });
+
+            // 6. Konversi ke CSV dan Download
+            let csv = Papa.unparse(dataLeger);
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a"); 
+            link.href = URL.createObjectURL(blob); 
+            link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; 
+            link.click();
+        };
+
+        // ==========================================
+        // SISA LOGIKA: NILAI, WALI KELAS, P5, EKSKUL (Sama seperti sebelumnya)
         // ==========================================
         window.loadSiswaAkademik = async () => {
             const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value;
             const tbody = document.getElementById('tbody-akademik');
             if(!mapelId || !kelasId) return alert("Pilih Mapel dan Kelas terlebih dahulu!");
             tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-akademik').style.display = 'table'; document.getElementById('btn-simpan-ak').style.display = 'none';
-
-            let pengampuId = null;
-            const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
+            let pengampuId = null; const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
             if(pgm) pengampuId = pgm.id;
-
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa di kelas ini.</td></tr>';
-
             let mapNilai = {};
-            if (pengampuId) {
-                const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId);
-                if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n);
-            }
-
+            if (pengampuId) { const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId); if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n); }
             curAnggotaKelas = anggota; tbody.innerHTML = '';
             anggota.forEach(a => {
                 const n = mapNilai[a.id] || {};
@@ -348,20 +400,14 @@
             alert("✅ Nilai Akademik berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai Akademik'; btn.disabled = false;
         });
 
-        // ==========================================
-        // MODULE 2: WALI KELAS (ABSEN, CATATAN & CETAK)
-        // ==========================================
         window.loadSiswaWalas = async () => {
             const kelasId = document.getElementById('wl_kelas').value; const tbody = document.getElementById('tbody-walas');
             if(!kelasId) return alert("Pilih Kelas!");
             tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-walas').style.display = 'table'; document.getElementById('btn-simpan-wl').style.display = 'none';
-
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa.</td></tr>';
-
             const { data: absenExisting } = await supabase.from('absensi_catatan').select('*').in('anggota_kelas_id', anggota.map(a=>a.id));
             let mapAbsen = {}; if(absenExisting) absenExisting.forEach(n => mapAbsen[n.anggota_kelas_id] = n);
-
             curAnggotaKelas = anggota; tbody.innerHTML = '';
             anggota.forEach(a => {
                 const n = mapAbsen[a.id] || {};
@@ -381,9 +427,6 @@
             alert("✅ Absensi & Catatan Wali Kelas berhasil disimpan!"); btn.textContent = '💾 Simpan Absensi & Catatan'; btn.disabled = false;
         });
 
-        // ==========================================
-        // MODULE 3: KOORDINATOR P5
-        // ==========================================
         window.loadSiswaP5 = async () => {
             const pId = document.getElementById('p5_proyek').value; const kId = document.getElementById('p5_kelas').value; const dim = document.getElementById('p5_dimensi').value; const tbody = document.getElementById('tbody-p5');
             if(!pId || !kId || !dim) return alert("Pilih Proyek, Kelas, dan Dimensi!");
@@ -413,9 +456,6 @@
             alert("✅ Nilai P5 berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai P5'; btn.disabled = false;
         });
 
-        // ==========================================
-        // MODULE 4: EKSTRAKURIKULER
-        // ==========================================
         window.loadSiswaEkskul = async () => {
             const eId = document.getElementById('ek_nama').value; const kId = document.getElementById('ek_kelas').value; const tbody = document.getElementById('tbody-ekskul');
             if(!eId || !kId) return alert("Pilih Ekskul dan Kelas!");
@@ -445,7 +485,6 @@
             alert("✅ Nilai Ekstrakurikuler berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai Ekstrakurikuler'; btn.disabled = false;
         });
 
-        // --- Fitur CSV Akademik ---
         document.getElementById('btn-download-csv').addEventListener('click', () => {
             let dataLaporan = curAnggotaKelas.map(a => { return { "NISN": a.siswa.nisn, "NAMA_SISWA": a.siswa.nama_lengkap, "FORMATIF": document.getElementById(`ak_f_${a.id}`).value || '', "SUMATIF": document.getElementById(`ak_s_${a.id}`).value || '', "SAS": document.getElementById(`ak_sas_${a.id}`).value || '', "NILAI_AKHIR": document.getElementById(`ak_na_${a.id}`).value || '', "DESKRIPSI_CAPAIAN": document.getElementById(`ak_desc_${a.id}`).value || '' } });
             let csv = Papa.unparse(dataLaporan); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Template_Nilai_Akademik.csv`; link.click();
