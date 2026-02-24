@@ -132,7 +132,7 @@
             <div id="tab-walas" class="tab-section">
                 <div class="card">
                     <div class="filter-grid">
-                        <div><label>Pilih Kelas Binaan Anda</label><select id="wl_kelas" class="kelas-dropdown"><option value="">- Pilih Kelas -</option></select></div>
+                        <div><label>Pilih Kelas Binaan Anda</label><select id="wl_kelas"><option value="">- Pilih Kelas -</option></select></div>
                         <div style="display: flex; gap: 10px; align-items: flex-end;">
                             <button class="btn btn-primary" style="width: 50%;" onclick="loadSiswaWalas()">🔍 Tampilkan Siswa</button>
                             <button class="btn btn-success" style="width: 50%;" onclick="downloadLegerKelas()">📊 Download Leger (Excel)</button>
@@ -261,17 +261,42 @@
         });
 
         async function loadMasterDropdowns() {
-            const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
-            document.querySelectorAll('.kelas-dropdown').forEach(select => { if(kelas) kelas.forEach(k => select.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); });
+            // 1. Ambil semua kelas untuk dropdown biasa (Mapel, P5, Ekskul)
+            const { data: kelasSemua } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
+            document.querySelectorAll('.kelas-dropdown').forEach(select => { 
+                if(select.id !== 'wl_kelas' && kelasSemua) {
+                    kelasSemua.forEach(k => select.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); 
+                }
+            });
 
+            // 2. KHUSUS WALI KELAS: Hanya ambil kelas yang menjadi binaannya (wali_kelas_id = guruId)
+            if (userRoles.includes('wali_kelas') || userRoles.includes('admin')) {
+                let query = supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
+                if (!userRoles.includes('admin')) { query = query.eq('wali_kelas_id', guruId); }
+                
+                const { data: kelasBinaan } = await query;
+                const selWalas = document.getElementById('wl_kelas');
+                
+                if (kelasBinaan && kelasBinaan.length > 0) {
+                    kelasBinaan.forEach(k => selWalas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`);
+                } else {
+                    selWalas.innerHTML = '<option value="">(Belum ditugaskan di kelas manapun)</option>';
+                }
+            }
+
+            // 3. Dropdown Mapel
             if (userRoles.includes('guru') || userRoles.includes('admin')) {
                 const { data: mapel } = await supabase.from('mata_pelajaran').select('id, nama_mapel').order('nama_mapel');
                 const selMapel = document.getElementById('ak_mapel'); if(mapel) mapel.forEach(m => selMapel.innerHTML += `<option value="${m.id}">${m.nama_mapel}</option>`);
             }
+            
+            // 4. Dropdown P5
             if (userRoles.includes('koordinator_p5') || userRoles.includes('admin')) {
                 const { data: p5 } = await supabase.from('proyek_p5').select('id, nama_proyek, tema');
                 const selP5 = document.getElementById('p5_proyek'); if(p5) p5.forEach(p => selP5.innerHTML += `<option value="${p.id}">${p.nama_proyek} (${p.tema})</option>`);
             }
+            
+            // 5. Dropdown Ekskul
             if (userRoles.includes('pembina_ekstra') || userRoles.includes('admin')) {
                 const { data: eks } = await supabase.from('ekstrakurikuler').select('id, nama_ekskul');
                 const selEks = document.getElementById('ek_nama');
@@ -280,104 +305,60 @@
         }
 
         // ==========================================
-        // FITUR BARU: DOWNLOAD LEGER KELAS (WALI KELAS)
+        // FITUR DOWNLOAD LEGER KELAS (WALI KELAS)
         // ==========================================
         window.downloadLegerKelas = async () => {
             const kelasId = document.getElementById('wl_kelas').value;
-            if(!kelasId) return alert("⚠️ Silakan pilih Kelas Binaan Anda terlebih dahulu di kotak sebelah kiri.");
+            if(!kelasId) return alert("⚠️ Silakan pilih Kelas Binaan Anda terlebih dahulu.");
+            const dropdown = document.getElementById('wl_kelas'); const kelasName = dropdown.options[dropdown.selectedIndex].text;
             
-            const dropdown = document.getElementById('wl_kelas');
-            const kelasName = dropdown.options[dropdown.selectedIndex].text;
-            
-            // 1. Ambil data Siswa di kelas tersebut
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa di kelas ini.");
             const anggotaIds = anggota.map(a => a.id);
 
-            // 2. Ambil Mata Pelajaran yang diajarkan di kelas ini
             const { data: pgm } = await supabase.from('pengampu_mapel').select('id, mata_pelajaran(nama_mapel)').eq('kelas_id', kelasId);
-            let mapelMap = {}; // Untuk simpan pengampu_id -> nama_mapel
-            let mapelArray = []; // Daftar nama mapel untuk header Excel
-            
-            if(pgm) {
-                pgm.forEach(p => {
-                    mapelMap[p.id] = p.mata_pelajaran.nama_mapel;
-                    if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel);
-                });
-            }
-            mapelArray.sort(); // Urutkan nama mapel sesuai abjad
+            let mapelMap = {}; let mapelArray = []; 
+            if(pgm) { pgm.forEach(p => { mapelMap[p.id] = p.mata_pelajaran.nama_mapel; if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel); }); }
+            mapelArray.sort();
 
-            // 3. Ambil Semua Nilai Akademik
             const { data: nilai } = await supabase.from('nilai_akademik').select('anggota_kelas_id, pengampu_mapel_id, nilai_akhir').in('anggota_kelas_id', anggotaIds);
-            
-            // 4. Ambil Data Absensi
             const { data: absen } = await supabase.from('absensi_catatan').select('anggota_kelas_id, sakit, izin, tanpa_keterangan').in('anggota_kelas_id', anggotaIds);
-            let mapAbsen = {};
-            if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
+            let mapAbsen = {}; if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
 
-            // 5. Susun Data untuk Excel (CSV)
             let dataLeger = anggota.map(a => {
-                let rowData = {
-                    "NISN": a.siswa.nisn,
-                    "NAMA SISWA": a.siswa.nama_lengkap
-                };
-                
-                let totalNilai = 0;
-                let jumlahMapelDiisi = 0;
-
-                // Buat kolom nilai untuk semua mapel
+                let rowData = { "NISN": a.siswa.nisn, "NAMA SISWA": a.siswa.nama_lengkap };
+                let totalNilai = 0; let jumlahMapelDiisi = 0;
                 mapelArray.forEach(m => { rowData[m] = ''; });
 
-                // Isi nilai yang sudah diinput guru
                 if (nilai) {
                     let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id);
                     nilaiAnak.forEach(n => {
-                        let namaMapel = mapelMap[n.pengampu_mapel_id];
-                        let nilaiAkhir = n.nilai_akhir || 0;
-                        if (namaMapel) {
-                            rowData[namaMapel] = nilaiAkhir;
-                            totalNilai += parseFloat(nilaiAkhir);
-                            jumlahMapelDiisi++;
-                        }
+                        let namaMapel = mapelMap[n.pengampu_mapel_id]; let nilaiAkhir = n.nilai_akhir || 0;
+                        if (namaMapel) { rowData[namaMapel] = nilaiAkhir; totalNilai += parseFloat(nilaiAkhir); jumlahMapelDiisi++; }
                     });
                 }
-
-                // Hitung Total dan Rata-rata
-                rowData["TOTAL NILAI"] = totalNilai;
-                rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
-
-                // Masukkan Absensi
+                rowData["TOTAL NILAI"] = totalNilai; rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
                 let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 };
-                rowData["SAKIT"] = abs.sakit || 0;
-                rowData["IZIN"] = abs.izin || 0;
-                rowData["ALPA"] = abs.tanpa_keterangan || 0;
-
+                rowData["SAKIT"] = abs.sakit || 0; rowData["IZIN"] = abs.izin || 0; rowData["ALPA"] = abs.tanpa_keterangan || 0;
                 return rowData;
             });
 
-            // 6. Konversi ke CSV dan Download
-            let csv = Papa.unparse(dataLeger);
-            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            let link = document.createElement("a"); 
-            link.href = URL.createObjectURL(blob); 
-            link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; 
-            link.click();
+            let csv = Papa.unparse(dataLeger); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; link.click();
         };
 
         // ==========================================
-        // SISA LOGIKA: NILAI, WALI KELAS, P5, EKSKUL (Sama seperti sebelumnya)
+        // SISA LOGIKA (NILAI, WALAS, P5, EKSKUL)
         // ==========================================
         window.loadSiswaAkademik = async () => {
-            const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value;
-            const tbody = document.getElementById('tbody-akademik');
+            const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value; const tbody = document.getElementById('tbody-akademik');
             if(!mapelId || !kelasId) return alert("Pilih Mapel dan Kelas terlebih dahulu!");
             tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-akademik').style.display = 'table'; document.getElementById('btn-simpan-ak').style.display = 'none';
             let pengampuId = null; const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
             if(pgm) pengampuId = pgm.id;
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa di kelas ini.</td></tr>';
-            let mapNilai = {};
-            if (pengampuId) { const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId); if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n); }
+            let mapNilai = {}; if (pengampuId) { const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId); if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n); }
             curAnggotaKelas = anggota; tbody.innerHTML = '';
             anggota.forEach(a => {
                 const n = mapNilai[a.id] || {};
