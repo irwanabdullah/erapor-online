@@ -201,6 +201,10 @@
                             <label>Nama Kelas</label><input type="text" id="nama_kelas" placeholder="Cth: VII-A" required>
                             <label>Tingkat (Angka)</label>
                             <select id="tingkat_kelas" required><option value="7">Tingkat 7</option><option value="8">Tingkat 8</option><option value="9">Tingkat 9</option></select>
+                            
+                            <label>Wali Kelas (Opsional)</label>
+                            <select id="walas_id"><option value="">- Belum Ada / Pilih Wali Kelas -</option></select>
+                            
                             <button type="submit" class="btn btn-dark" style="width: 100%; margin-top: 15px;">Simpan Kelas</button>
                         </form>
                     </div>
@@ -255,7 +259,8 @@
         async function loadUsers() {
             const selectUser = document.getElementById('select-user')
             const selectKoordinator = document.getElementById('koordinator_id')
-            const selectPembina = document.getElementById('pembina_id') // Dropdown pembina ekskul
+            const selectPembina = document.getElementById('pembina_id')
+            const selectWalas = document.getElementById('walas_id')
             
             const { data } = await supabase.from('profiles').select('id, full_name, roles').order('full_name')
             if (data) {
@@ -263,10 +268,15 @@
                 selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>'
                 selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>'
                 selectPembina.innerHTML = '<option value="">-- Pilih Pembina Ekskul --</option>'
+                selectWalas.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>'
                 data.forEach(user => {
                     selectUser.innerHTML += `<option value="${user.id}">${user.full_name} (${user.roles.join(', ')})</option>`
                     selectKoordinator.innerHTML += `<option value="${user.id}">${user.full_name}</option>`
                     selectPembina.innerHTML += `<option value="${user.id}">${user.full_name}</option>`
+                    
+                    if(user.roles && user.roles.includes('wali_kelas')) {
+                        selectWalas.innerHTML += `<option value="${user.id}">${user.full_name}</option>`
+                    }
                 })
             }
         }
@@ -324,7 +334,19 @@
 
         // Master Data Forms
         document.getElementById('form-tapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('tahun_ajaran').insert([{ nama: document.getElementById('nama_tapel').value, semester: document.getElementById('smt_tapel').value, is_active: true }]); alert("Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); })
-        document.getElementById('form-kelas').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('kelas').insert([{ nama_kelas: document.getElementById('nama_kelas').value, tingkat: document.getElementById('tingkat_kelas').value }]); alert("Tersimpan!"); e.target.reset(); loadDataPlotting(); })
+        
+        // Simpan Kelas dengan ID Wali Kelas
+        document.getElementById('form-kelas').addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const walasId = document.getElementById('walas_id').value || null;
+            await supabase.from('kelas').insert([{ 
+                nama_kelas: document.getElementById('nama_kelas').value, 
+                tingkat: document.getElementById('tingkat_kelas').value,
+                wali_kelas_id: walasId
+            }]); 
+            alert("Kelas & Wali Kelas Tersimpan!"); e.target.reset(); loadDataPlotting(); 
+        })
+
         document.getElementById('form-mapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('mata_pelajaran').insert([{ kode_mapel: document.getElementById('kode_mapel').value, nama_mapel: document.getElementById('nama_mapel').value }]); alert("Tersimpan!"); e.target.reset(); })
         
         // Simpan Ekstrakurikuler
