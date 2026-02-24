@@ -127,7 +127,7 @@
                 <form id="form-walas">
                     <div style="overflow-x: auto;">
                         <table id="tabel-walas" style="display: none;">
-                            <thead><tr><th>Nama Siswa (NISN)</th><th>Sakit (Hari)</th><th>Izin (Hari)</th><th>Alpa (Hari)</th><th>Catatan Wali Kelas</th></tr></thead>
+                            <thead><tr><th>Nama Siswa (NISN)</th><th>Sakit (Hari)</th><th>Izin (Hari)</th><th>Alpa (Hari)</th><th>Catatan Wali Kelas</th><th width="15%">Aksi (Cetak)</th></tr></thead>
                             <tbody id="tbody-walas"></tbody>
                         </table>
                     </div>
@@ -294,11 +294,14 @@
                 const n = mapNilai[a.id] || {};
                 tbody.innerHTML += `<tr>
                     <td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td>
-                    <td><input type="number" id="ak_f_${a.id}" value="${n.nilai_formatif || ''}"></td>
-                    <td><input type="number" id="ak_s_${a.id}" value="${n.nilai_sumatif || ''}"></td>
-                    <td><input type="number" id="ak_sas_${a.id}" value="${n.nilai_sas || ''}"></td>
-                    <td><input type="number" id="ak_na_${a.id}" value="${n.nilai_akhir || ''}"></td>
-                    <td><textarea id="ak_desc_${a.id}">${n.deskripsi_capaian || ''}</textarea></td>
+                    <td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td>
+                    <td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td>
+                    <td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td>
+                    <td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px; width: 100%;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button>
+                        <button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem; width: 100%;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button>
+                    </td>
                 </tr>`;
             });
             document.getElementById('btn-simpan-ak').style.display = 'block';
@@ -511,3 +514,4 @@
     </script>
 </body>
 </html>
+
