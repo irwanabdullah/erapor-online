@@ -117,6 +117,17 @@
                             <div style="display: flex; gap: 10px;">
                                 <div style="flex: 2;"><label>NISN</label><input type="text" id="nisn" placeholder="0011223344" required></div>
                                 <div style="flex: 1;"><label>Kelamin</label><select id="jk_siswa" required><option value="L">L</option><option value="P">P</option></select></div>
+                                <div style="flex: 1;">
+                                    <label>Agama</label>
+                                    <select id="agama_siswa" required>
+                                        <option value="Islam">Islam</option>
+                                        <option value="Kristen">Kristen</option>
+                                        <option value="Katolik">Katolik</option>
+                                        <option value="Hindu">Hindu</option>
+                                        <option value="Buddha">Buddha</option>
+                                        <option value="Konghucu">Konghucu</option>
+                                    </select>
+                                </div>
                             </div>
                             <label>Nama Lengkap Siswa</label>
                             <input type="text" id="nama_siswa" placeholder="Cth: Budi Santoso" required>
@@ -127,7 +138,7 @@
                     <div class="card">
                         <h3>🚀 Import Siswa (Massal CSV)</h3>
                         <div class="csv-box">
-                            <p style="font-size: 0.85rem; color: #166534; margin-top: 0;">Format Header Baris Pertama:<br><b>nisn, nama, jk, kelas</b></p>
+                            <p style="font-size: 0.85rem; color: #166534; margin-top: 0;">Format Header Baris Pertama:<br><b>nisn, nama, jk, agama, kelas</b></p>
                             <input type="file" id="file-csv" accept=".csv" style="margin-bottom: 15px; background: #fff;">
                             <button id="btn-import-csv" class="btn btn-success" style="width: 100%;">⬆ Mulai Import Ribuan Siswa</button>
                             <p id="status-import" style="font-size: 0.85rem; font-weight: bold; margin-top: 15px;"></p>
@@ -326,7 +337,16 @@
         }
 
         // --- EVENT LISTENER FORMS ---
-        document.getElementById('form-siswa').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('siswa').insert([{ nisn: document.getElementById('nisn').value, nama_lengkap: document.getElementById('nama_siswa').value, jenis_kelamin: document.getElementById('jk_siswa').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } })
+        document.getElementById('form-siswa').addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const { error } = await supabase.from('siswa').insert([{ 
+                nisn: document.getElementById('nisn').value, 
+                nama_lengkap: document.getElementById('nama_siswa').value, 
+                jenis_kelamin: document.getElementById('jk_siswa').value,
+                agama: document.getElementById('agama_siswa').value // <-- Tambahan Agama
+            }]); 
+            if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } 
+        })
         
         document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => { e.preventDefault(); const kelasId = document.getElementById('plot_kelas').value; const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked'); if (checkboxes.length === 0) return alert("⚠️ Centang minimal satu siswa!"); let errorCount = 0; for (let cb of checkboxes) { const { error } = await supabase.from('anggota_kelas').insert([{ siswa_id: cb.value, kelas_id: kelasId }]); if (error && error.code !== '23505') errorCount++; } if (errorCount > 0) alert(`⚠️ Ada ${errorCount} data gagal disimpan.`); else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } })
         
@@ -360,9 +380,9 @@
         });
 
         // Import CSV
-        document.getElementById('btn-import-csv').addEventListener('click', async () => { const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Memproses...'; Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; for (let row of results.data) { try { if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([{ nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase() }]).select('id').single(); if (err) { gagal++; continue; } if (kelasTujuan && siswaBaru) await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); sukses++; } catch (e) { gagal++; } } statusText.style.color = 'green'; statusText.textContent = `✅ Import Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; loadDataPlotting(); } }); });
-
+        document.getElementById('btn-import-csv').addEventListener('click', async () => { const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Memproses...'; Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; for (let row of results.data) { try { if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([{ nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase(), agama: row.agama || 'Islam' }]).select('id').single(); if (err) { gagal++; continue; } if (kelasTujuan && siswaBaru) await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); sukses++; } catch (e) { gagal++; } } statusText.style.color = 'green'; statusText.textContent = `✅ Import Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; loadDataPlotting(); } }); });
         init()
     </script>
 </body>
 </html>
+
