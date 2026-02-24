@@ -104,6 +104,11 @@
         .checkbox-item { display: flex; align-items: center; gap: 10px; padding: 6px; cursor: pointer; border-radius: 4px; margin: 0;}
         .checkbox-item:hover { background-color: #e5e7eb; }
         .checkbox-item input { width: auto; margin: 0; transform: scale(1.2); cursor: pointer; }
+
+        /* --- TABEL CETAK ADMIN --- */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px; }
+        th, td { padding: 10px; border: 1px solid var(--border-color); }
+        th { background-color: #f8fafc; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
@@ -117,6 +122,7 @@
             <li><a class="nav-link" data-target="page-master">📦 Master Data Utama</a></li>
             <li><a class="nav-link" data-target="page-plotting">🏫 Plotting Kelas</a></li>
             <li><a class="nav-link" data-target="page-p5">🌟 Set Proyek P5</a></li>
+            <li><a class="nav-link" data-target="page-cetak">🖨️ Cetak Rapor & Leger</a></li>
         </ul>
         <button id="btn-logout" class="logout-btn">🚪 Keluar</button>
     </aside>
@@ -137,7 +143,8 @@
                         <b>1. Hak Akses</b> (Atur siapa Wali Kelas, Guru Mapel, Koordinator P5).<br>
                         <b>2. Master Data Utama</b> (Buat Tahun Ajaran, Daftar Kelas, Mapel, dan Ekskul).<br>
                         <b>3. Kelola Siswa</b> (Import data anak-anak menggunakan Excel/CSV).<br>
-                        <b>4. Plotting Kelas</b> (Masukkan anak-anak ke dalam kelasnya masing-masing).
+                        <b>4. Plotting Kelas</b> (Masukkan anak-anak ke dalam kelasnya masing-masing).<br>
+                        <b>5. Cetak Rapor</b> (Menu baru: Cetak rapor & unduh leger semua kelas).
                     </p>
                 </div>
             </div>
@@ -283,6 +290,34 @@
                 </div>
             </div>
 
+            <div id="page-cetak" class="page-section">
+                <div class="card">
+                    <div class="card-header"><h3>🖨️ Cetak Rapor & Download Leger Semua Kelas</h3></div>
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label style="margin-top:0;">Pilih Kelas</label>
+                            <select id="cetak_kelas"><option value="">-- Memuat Kelas... --</option></select>
+                        </div>
+                        <button class="btn btn-primary" style="width: auto; height: 38px; margin-top:0;" onclick="loadSiswaCetak()">🔍 Tampilkan Siswa</button>
+                        <button class="btn btn-success" style="width: auto; height: 38px; margin-top:0;" onclick="downloadLegerAdmin()">📊 Download Leger Kelas</button>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table id="tabel-cetak" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">No</th>
+                                    <th style="text-align: left;">Nama Lengkap Siswa</th>
+                                    <th style="width: 150px;">NISN</th>
+                                    <th style="width: 200px;">Aksi Dokumen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-cetak"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -374,11 +409,16 @@
         async function loadDataPlotting() {
             const plotKelas = document.getElementById('plot_kelas'); 
             const listSiswa = document.getElementById('list-siswa');
+            const cetakKelas = document.getElementById('cetak_kelas'); // Dropdown baru untuk menu cetak
             
             const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
             if (kelas) { 
                 plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; 
-                kelas.forEach(k => plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`);
+                cetakKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; 
+                kelas.forEach(k => {
+                    plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`;
+                    cetakKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`;
+                });
             }
             
             const { data: siswa } = await supabase.from('siswa').select('id, nama_lengkap, nisn, agama').order('nama_lengkap');
@@ -403,7 +443,6 @@
         // FUNGSI SIMPAN FORM (INSERT KE DATABASE)
         // ==========================================
 
-        // 1. Simpan Role
         document.getElementById('form-role').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('select-user').value;
@@ -417,7 +456,6 @@
             btn.textContent = '💾 Update Hak Akses';
         });
 
-        // 2. Simpan Siswa Manual
         document.getElementById('form-siswa').addEventListener('submit', async (e) => { 
             e.preventDefault(); 
             const { error } = await supabase.from('siswa').insert([{ 
@@ -429,7 +467,6 @@
             if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } 
         });
 
-        // 3. Import CSV Siswa
         document.getElementById('btn-import-csv').addEventListener('click', async () => { 
             const fileInput = document.getElementById('file-csv'); 
             const statusText = document.getElementById('status-import'); 
@@ -463,7 +500,6 @@
             }); 
         });
 
-        // 4. Simpan Plotting Kelas
         document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => { 
             e.preventDefault(); 
             const kelasId = document.getElementById('plot_kelas').value; 
@@ -479,7 +515,6 @@
             else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } 
         });
 
-        // 5. Master Data Forms
         document.getElementById('form-tapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('tahun_ajaran').insert([{ nama: document.getElementById('nama_tapel').value, semester: document.getElementById('smt_tapel').value, is_active: true }]); alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); });
         
         document.getElementById('form-kelas').addEventListener('submit', async (e) => { 
@@ -502,6 +537,79 @@
             const { error } = await supabase.from('proyek_p5').insert([{ nama_proyek: document.getElementById('nama_proyek').value, tema: document.getElementById('tema_proyek').value, koordinator_id: document.getElementById('koordinator_id').value, tahun_ajaran_id: document.getElementById('p5_tahun_ajaran').value }]); 
             if (error) alert("Error: " + error.message); else { alert("✅ Proyek P5 dibuat!"); e.target.reset(); } 
         });
+
+        // ==========================================
+        // FUNGSI BARU: CETAK RAPOR & LEGER OLEH ADMIN
+        // ==========================================
+        window.loadSiswaCetak = async () => {
+            const kelasId = document.getElementById('cetak_kelas').value;
+            const tbody = document.getElementById('tbody-cetak');
+            if(!kelasId) return alert("Pilih Kelas terlebih dahulu!");
+
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>';
+            document.getElementById('tabel-cetak').style.display = 'table';
+
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+
+            if(!anggota || anggota.length === 0) {
+                return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Tidak ada siswa di kelas ini.</td></tr>';
+            }
+
+            tbody.innerHTML = '';
+            anggota.forEach((a, index) => {
+                tbody.innerHTML += `
+                <tr>
+                    <td style="text-align:center;">${index + 1}</td>
+                    <td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b></td>
+                    <td style="text-align:center;">${a.siswa.nisn}</td>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; margin-right: 5px;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button>
+                        <button type="button" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 P5</button>
+                    </td>
+                </tr>`;
+            });
+        };
+
+        window.downloadLegerAdmin = async () => {
+            const kelasId = document.getElementById('cetak_kelas').value;
+            if(!kelasId) return alert("⚠️ Silakan pilih Kelas terlebih dahulu.");
+            const dropdown = document.getElementById('cetak_kelas');
+            const kelasName = dropdown.options[dropdown.selectedIndex].text;
+
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+            if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa di kelas ini.");
+            const anggotaIds = anggota.map(a => a.id);
+
+            const { data: pgm } = await supabase.from('pengampu_mapel').select('id, mata_pelajaran(nama_mapel)').eq('kelas_id', kelasId);
+            let mapelMap = {}; let mapelArray = [];
+            if(pgm) { pgm.forEach(p => { mapelMap[p.id] = p.mata_pelajaran.nama_mapel; if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel); }); }
+            mapelArray.sort();
+
+            const { data: nilai } = await supabase.from('nilai_akademik').select('anggota_kelas_id, pengampu_mapel_id, nilai_akhir').in('anggota_kelas_id', anggotaIds);
+            const { data: absen } = await supabase.from('absensi_catatan').select('anggota_kelas_id, sakit, izin, tanpa_keterangan').in('anggota_kelas_id', anggotaIds);
+            let mapAbsen = {}; if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
+
+            let dataLeger = anggota.map(a => {
+                let rowData = { "NISN": a.siswa.nisn, "NAMA SISWA": a.siswa.nama_lengkap };
+                let totalNilai = 0; let jumlahMapelDiisi = 0;
+                mapelArray.forEach(m => { rowData[m] = ''; });
+
+                if (nilai) {
+                    let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id);
+                    nilaiAnak.forEach(n => {
+                        let namaMapel = mapelMap[n.pengampu_mapel_id]; let nilaiAkhir = n.nilai_akhir || 0;
+                        if (namaMapel) { rowData[namaMapel] = nilaiAkhir; totalNilai += parseFloat(nilaiAkhir); jumlahMapelDiisi++; }
+                    });
+                }
+                rowData["TOTAL NILAI"] = totalNilai; rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
+                let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 };
+                rowData["SAKIT"] = abs.sakit || 0; rowData["IZIN"] = abs.izin || 0; rowData["ALPA"] = abs.tanpa_keterangan || 0;
+                return rowData;
+            });
+
+            let csv = Papa.unparse(dataLeger); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; link.click();
+        };
 
         // Jalankan saat aplikasi dibuka
         init();
