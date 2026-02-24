@@ -190,6 +190,38 @@
                 padding: 40px 30px;
             }
         }
+
+        /* --- TAMBAHAN UNTUK MATA PASSWORD --- */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper .form-control {
+            padding-right: 45px; /* Memberi ruang agar teks tidak tertutup ikon */
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            transition: opacity 0.2s ease;
+            opacity: 0.6;
+        }
+
+        .btn-toggle-password:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -209,8 +241,13 @@
 
             <form id="form-login">
                 <div class="form-group">
-                    <label for="email">Email Pengguna</label>
-                    <input type="email" id="email" class="form-control" placeholder="contoh: guru@sekolah.sch.id" required>
+                    <label for="password">Kata Sandi (Password)</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                        <button type="button" id="toggle-password" class="btn-toggle-password" title="Tampilkan sandi">
+                            👁️
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -253,12 +290,18 @@
         }
 
         // Event Listener Tombol Login
-        document.getElementById('form-login').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Fitur Tampil/Sembunyi Password (Ikon Mata)
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+            // Cek apakah tipe input saat ini password atau text
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btnLogin = document.getElementById('btn-login');
+            // Ubah ikon mata (terbuka 👁️ / tertutup 🙈)
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
 
             // Ubah tombol jadi status loading
             btnLogin.innerHTML = '⏳ Memverifikasi Data...';
@@ -287,3 +330,4 @@
     </script>
 </body>
 </html>
+
