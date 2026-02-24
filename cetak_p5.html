@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Rapor Proyek P5</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; background: #fff; line-height: 1.5; }
+        .header { text-align: center; font-weight: bold; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+        .identitas { width: 100%; margin-bottom: 20px; font-weight: bold; }
+        table.tabel-p5 { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 20px; }
+        table.tabel-p5 th, table.tabel-p5 td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+        table.tabel-p5 th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
+        .text-center { text-align: center; }
+        .proyek-title { background: #e0f7fa; padding: 5px 10px; border: 1px solid #000; border-bottom: none; font-weight: bold; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="no-print" onclick="window.print()" style="padding: 10px 20px; font-size: 16px; margin-bottom: 20px; cursor: pointer;">🖨️ Cetak Dokumen P5</button>
+
+    <div class="header">
+        <h2>RAPOR PROYEK PENGUATAN PROFIL PELAJAR PANCASILA</h2>
+    </div>
+
+    <table class="identitas">
+        <tr><td width="20%">Nama Siswa</td><td width="2%">:</td><td width="48%" id="nama_siswa">Memuat...</td><td width="15%">Kelas</td><td width="2%">:</td><td width="13%" id="kelas">...</td></tr>
+        <tr><td>NISN</td><td>:</td><td id="nisn">...</td><td>Fase</td><td>:</td><td>D</td></tr>
+    </table>
+
+    <div id="p5-container">
+        <p class="text-center">Memuat data capaian Proyek P5 dari database...</p>
+    </div>
+
+    <script type="module">
+        import { supabase } from './app.js'
+
+        async function loadRaporP5() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            // 1. Identitas
+            const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn), kelas(nama_kelas)').eq('id', id).single();
+            if(agt) {
+                document.getElementById('nama_siswa').textContent = agt.siswa.nama_lengkap;
+                document.getElementById('nisn').textContent = agt.siswa.nisn;
+                document.getElementById('kelas').textContent = agt.kelas.nama_kelas;
+            }
+
+            // 2. Ambil Nilai P5
+            const {data: p5} = await supabase.from('nilai_p5').select('dimensi, capaian, catatan, proyek_p5(nama_proyek, tema)').eq('anggota_kelas_id', id);
+            const container = document.getElementById('p5-container');
+            
+            if(p5 && p5.length > 0) {
+                // Kelompokkan nilai berdasarkan Judul Proyek
+                let grouped = {};
+                p5.forEach(n => {
+                    let pName = n.proyek_p5.nama_proyek;
+                    if(!grouped[pName]) grouped[pName] = { tema: n.proyek_p5.tema, items: [] };
+                    grouped[pName].items.push(n);
+                });
+
+                container.innerHTML = ''; // Bersihkan container
+                
+                // Cetak tabel untuk masing-masing proyek
+                for(let pName in grouped) {
+                    let html = `<div class="proyek-title">Proyek: ${pName} <br><small style="font-weight:normal;">Tema: ${grouped[pName].tema}</small></div>
+                    <table class="tabel-p5">
+                        <thead><tr><th width="30%">Dimensi Profil Pancasila</th><th width="15%">Capaian</th><th width="55%">Catatan Proses Observasi</th></tr></thead>
+                        <tbody>`;
+                    
+                    grouped[pName].items.forEach(item => {
+                        html += `<tr><td>${item.dimensi}</td><td class="text-center"><b>${item.capaian}</b></td><td>${item.catatan}</td></tr>`;
+                    });
+                    
+                    html += `</tbody></table>`;
+                    container.innerHTML += html;
+                }
+            } else {
+                container.innerHTML = '<p class="text-center" style="color:red;">Belum ada nilai Proyek P5 yang diinputkan untuk siswa ini.</p>';
+            }
+
+            setTimeout(() => window.print(), 1000);
+        }
+        loadRaporP5();
+    </script>
+</body>
+</html>

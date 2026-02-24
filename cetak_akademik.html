@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Rapor Akademik</title>
+    <style>
+        /* Ukuran Kertas A4 */
+        @page { size: A4; margin: 20mm; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; background: #fff; line-height: 1.5; }
+        
+        .header { text-align: center; font-weight: bold; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+        .header h2, .header h3 { margin: 0; text-transform: uppercase; }
+        
+        .identitas { width: 100%; margin-bottom: 20px; font-weight: bold; }
+        .identitas td { padding: 3px; }
+        
+        table.tabel-nilai { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        table.tabel-nilai th, table.tabel-nilai td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+        table.tabel-nilai th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
+        .text-center { text-align: center; }
+        
+        .ttd-box { width: 100%; margin-top: 40px; page-break-inside: avoid; }
+        .ttd-box td { text-align: center; width: 33%; vertical-align: bottom; height: 100px; }
+        
+        /* Hilangkan tombol saat dicetak */
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="no-print" onclick="window.print()" style="padding: 10px 20px; font-size: 16px; margin-bottom: 20px; cursor: pointer;">🖨️ Cetak Dokumen</button>
+
+    <div class="header">
+        <h2>LAPORAN HASIL BELAJAR (RAPOR)</h2>
+        <h3>SEKOLAH PENGGERAK KURIKULUM MERDEKA</h3>
+    </div>
+
+    <table class="identitas">
+        <tr>
+            <td width="20%">Nama Peserta Didik</td><td width="2%">:</td><td width="48%" id="nama_siswa">Memuat...</td>
+            <td width="15%">Kelas</td><td width="2%">:</td><td width="13%" id="kelas">...</td>
+        </tr>
+        <tr>
+            <td>NISN</td><td>:</td><td id="nisn">...</td>
+            <td>Fase/Tingkat</td><td>:</td><td>D / SMP</td>
+        </tr>
+    </table>
+
+    <b>A. NILAI AKADEMIK</b>
+    <table class="tabel-nilai">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="30%">Mata Pelajaran</th>
+                <th width="15%">Nilai Akhir</th>
+                <th width="50%">Capaian Kompetensi (Deskripsi)</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-akademik">
+            <tr><td colspan="4" class="text-center">Memuat data dari database...</td></tr>
+        </tbody>
+    </table>
+
+    <b>B. EKSTRAKURIKULER</b>
+    <table class="tabel-nilai">
+        <thead>
+            <tr>
+                <th width="5%">No</th><th width="30%">Kegiatan Ekstrakurikuler</th><th width="15%">Predikat</th><th width="50%">Keterangan</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-ekskul"></tbody>
+    </table>
+
+    <b>C. KETIDAKHADIRAN & CATATAN WALI KELAS</b>
+    <table class="tabel-nilai" style="width: 50%;">
+        <tr><td>Sakit</td><td class="text-center" id="sakit">-</td></tr>
+        <tr><td>Izin</td><td class="text-center" id="izin">-</td></tr>
+        <tr><td>Tanpa Keterangan</td><td class="text-center" id="alpa">-</td></tr>
+    </table>
+    
+    <div style="border: 1px solid #000; padding: 10px; min-height: 50px;">
+        <b>Catatan Wali Kelas:</b><br>
+        <span id="catatan">-</span>
+    </div>
+
+    <table class="ttd-box">
+        <tr>
+            <td>Mengetahui,<br>Orang Tua / Wali<br><br><br><br><br><b>( ......................................... )</b></td>
+            <td><br>Kepala Sekolah<br><br><br><br><br><b>( ......................................... )</b></td>
+            <td>Diberikan di: Makassar<br>Wali Kelas<br><br><br><br><br><b>( ......................................... )</b></td>
+        </tr>
+    </table>
+
+    <script type="module">
+        import { supabase, checkSession } from './app.js'
+
+        async function loadRapor() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if(!id) return document.body.innerHTML = '<h2 style="color:red; text-align:center;">Akses Ditolak. ID Siswa tidak ditemukan!</h2>';
+
+            // 1. Ambil Identitas
+            const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn), kelas(nama_kelas)').eq('id', id).single();
+            if(agt) {
+                document.getElementById('nama_siswa').textContent = agt.siswa.nama_lengkap;
+                document.getElementById('nisn').textContent = agt.siswa.nisn;
+                document.getElementById('kelas').textContent = agt.kelas.nama_kelas;
+            }
+
+            // 2. Ambil Nilai Akademik (Join dengan Pengampu & Mapel)
+            const {data: nilai} = await supabase.from('nilai_akademik').select('nilai_akhir, deskripsi_capaian, pengampu_mapel(mata_pelajaran(nama_mapel))').eq('anggota_kelas_id', id);
+            const tbAkademik = document.getElementById('tbody-akademik');
+            if(nilai && nilai.length > 0) {
+                tbAkademik.innerHTML = '';
+                nilai.forEach((n, i) => {
+                    tbAkademik.innerHTML += `<tr><td class="text-center">${i+1}</td><td>${n.pengampu_mapel.mata_pelajaran.nama_mapel}</td><td class="text-center"><b>${n.nilai_akhir}</b></td><td>${n.deskripsi_capaian}</td></tr>`;
+                });
+            } else { tbAkademik.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada nilai akademik diinput.</td></tr>'; }
+
+            // 3. Ambil Ekstrakurikuler
+            const {data: ekskul} = await supabase.from('nilai_ekskul').select('predikat, deskripsi, ekstrakurikuler(nama_ekskul)').eq('anggota_kelas_id', id);
+            const tbEkskul = document.getElementById('tbody-ekskul');
+            if(ekskul && ekskul.length > 0) {
+                ekskul.forEach((e, i) => {
+                    tbEkskul.innerHTML += `<tr><td class="text-center">${i+1}</td><td>${e.ekstrakurikuler.nama_ekskul}</td><td class="text-center">${e.predikat}</td><td>${e.deskripsi}</td></tr>`;
+                });
+            } else { tbEkskul.innerHTML = '<tr><td colspan="4" class="text-center">- Tidak mengikuti ekstrakurikuler -</td></tr>'; }
+
+            // 4. Ambil Absensi
+            const {data: absen} = await supabase.from('absensi_catatan').select('*').eq('anggota_kelas_id', id).single();
+            if(absen) {
+                document.getElementById('sakit').textContent = absen.sakit + ' Hari';
+                document.getElementById('izin').textContent = absen.izin + ' Hari';
+                document.getElementById('alpa').textContent = absen.tanpa_keterangan + ' Hari';
+                document.getElementById('catatan').textContent = absen.catatan_wali_kelas || '-';
+            }
+
+            // Otomatis muncul dialog print setelah 1 detik
+            setTimeout(() => window.print(), 1000);
+        }
+        
+        loadRapor();
+    </script>
+</body>
+</html>
