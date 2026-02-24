@@ -3,47 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | e-Rapor Online</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login | Portal e-Rapor Kurikulum Merdeka</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 1000px;
+            height: 600px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        /* --- SISI KIRI (BRANDING) --- */
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: var(--white);
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: "";
+            position: absolute;
+            top: -50px; left: -50px; width: 200px; height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .login-left::after {
+            content: "";
+            position: absolute;
+            bottom: -100px; right: -50px; width: 300px; height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .brand-logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            z-index: 1;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+            line-height: 1.2;
+            z-index: 1;
+        }
+
+        .brand-subtitle {
+            font-size: 1rem;
+            font-weight: 300;
+            opacity: 0.9;
+            line-height: 1.6;
+            z-index: 1;
+        }
+
+        /* --- SISI KANAN (FORM LOGIN) --- */
+        .login-right {
+            flex: 1;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            margin-bottom: 40px;
+        }
+
+        .login-header h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .login-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-login:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive Design untuk Layar Kecil/HP */
+        @media (max-width: 900px) {
+            .login-wrapper {
+                flex-direction: column;
+                width: 90%;
+                height: auto;
+                min-height: 80vh;
+            }
+            .login-left {
+                padding: 40px 30px;
+                text-align: center;
+            }
+            .login-right {
+                padding: 40px 30px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container" style="max-width: 400px; margin-top: 100px;">
-        <h2 style="text-align: center;">Masuk e-Rapor</h2>
-        <p id="error-msg" style="color: red; text-align: center;"></p>
-        
-        <form id="login-form">
-            <label>Email Sekolah</label>
-            <input type="email" id="email" required>
-            <label>Password</label>
-            <input type="password" id="password" required>
-            <button type="submit" style="width: 100%; margin-top: 10px;">Login</button>
-        </form>
+
+    <div class="login-wrapper">
+        <div class="login-left">
+            <div class="brand-logo">🏫</div>
+            <h1 class="brand-title">Portal<br>e-Rapor<br>Kurikulum Merdeka</h1>
+            <p class="brand-subtitle">Sistem Informasi Akademik dan Penilaian Terpadu. Kelola nilai formatif, sumatif, hingga Proyek P5 dengan mudah, cepat, dan akurat.</p>
+        </div>
+
+        <div class="login-right">
+            <div class="login-header">
+                <h2>Selamat Datang</h2>
+                <p>Silakan masukkan kredensial akun Anda.</p>
+            </div>
+
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="email">Email Pengguna</label>
+                    <input type="email" id="email" class="form-control" placeholder="contoh: guru@sekolah.sch.id" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Kata Sandi (Password)</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="btn-login" class="btn-login">Masuk ke Portal</button>
+            </form>
+
+            <div class="footer-text">
+                &copy; 2024 Hak Cipta Dilindungi.<br>Sistem e-Rapor Internal Sekolah.
+            </div>
+        </div>
     </div>
 
     <script type="module">
-        import { supabase, checkSession } from './app.js'
+        // Pastikan Anda sudah mengatur file app.js Anda dengan benar
+        import { supabase } from './app.js'
 
-        // Jika sudah login, langsung lempar ke dashboard
-        checkSession().then(session => {
-            if(session) window.location.href = 'dashboard.html'
-        })
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault()
-            const email = document.getElementById('email').value
-            const password = document.getElementById('password').value
-            const btn = e.target.querySelector('button')
-            
-            btn.textContent = 'Memproses...'
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-            
-            if (error) {
-                document.getElementById('error-msg').textContent = "Login gagal: " + error.message
-                btn.textContent = 'Login'
-            } else {
-                window.location.href = 'dashboard.html'
+        // Fungsi cek sesi (Jika sudah login, langsung lempar ke dalam agar tidak usah login ulang)
+        async function checkExistingSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                redirectUser(session.user.id);
             }
-        })
+        }
+
+        // Fungsi Redirect Cerdas Berdasarkan Jabatan/Role
+        async function redirectUser(userId) {
+            const { data: profile } = await supabase.from('profiles').select('roles').eq('id', userId).single();
+            
+            // Jika dia punya role admin, lempar ke admin.html
+            if (profile && profile.roles && profile.roles.includes('admin')) {
+                window.location.replace('admin.html');
+            } else {
+                // Selain admin (Guru, Walas, dll), lempar ke guru.html
+                window.location.replace('guru.html');
+            }
+        }
+
+        // Event Listener Tombol Login
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btnLogin = document.getElementById('btn-login');
+
+            // Ubah tombol jadi status loading
+            btnLogin.innerHTML = '⏳ Memverifikasi Data...';
+            btnLogin.disabled = true;
+
+            // Proses Login ke Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                // Jika gagal (salah password/email)
+                alert("⚠️ Login Gagal! Periksa kembali email dan kata sandi Anda.\n\nPesan sistem: " + error.message);
+                btnLogin.innerHTML = 'Masuk ke Portal';
+                btnLogin.disabled = false;
+            } else {
+                // Jika berhasil, panggil fungsi redirect cerdas
+                btnLogin.innerHTML = '✅ Berhasil! Mengalihkan...';
+                redirectUser(data.user.id);
+            }
+        });
+
+        // Jalankan cek sesi saat halaman pertama dibuka
+        checkExistingSession();
     </script>
 </body>
 </html>
