@@ -66,7 +66,7 @@
         <ul class="nav-menu" id="sidebar-menu">
             <li class="nav-item active" style="display: flex;" onclick="switchTab('tab-home', this)">🏠 Dashboard</li>
             <li class="nav-item" id="nav-guru" onclick="switchTab('tab-akademik', this)">📝 Nilai Akademik</li>
-            <li class="nav-item" id="nav-walas" onclick="switchTab('tab-walas', this)">👨‍🏫 Wali Kelas (Absen)</li>
+            <li class="nav-item" id="nav-walas" onclick="switchTab('tab-walas', this)">👨‍🏫 Wali Kelas (Cetak)</li>
             <li class="nav-item" id="nav-p5" onclick="switchTab('tab-p5', this)">🌟 Proyek P5</li>
             <li class="nav-item" id="nav-ekskul" onclick="switchTab('tab-ekskul', this)">⚽ Ekstrakurikuler</li>
         </ul>
@@ -127,11 +127,20 @@
                 <form id="form-walas">
                     <div style="overflow-x: auto;">
                         <table id="tabel-walas" style="display: none;">
-                            <thead><tr><th>Nama Siswa (NISN)</th><th>Sakit (Hari)</th><th>Izin (Hari)</th><th>Alpa (Hari)</th><th>Catatan Wali Kelas</th><th width="15%">Aksi (Cetak)</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Nama Siswa (NISN)</th>
+                                    <th>Sakit (Hari)</th>
+                                    <th>Izin (Hari)</th>
+                                    <th>Alpa (Hari)</th>
+                                    <th>Catatan Wali Kelas</th>
+                                    <th width="15%">Aksi (Cetak)</th>
+                                </tr>
+                            </thead>
                             <tbody id="tbody-walas"></tbody>
                         </table>
                     </div>
-                    <button type="submit" id="btn-simpan-wl" class="btn btn-primary" style="width: 100%; margin-top: 15px; display: none; padding: 15px;">💾 Simpan Absensi & Catatan</button>
+                    <button type="submit" id="btn-simpan-wl" class="btn btn-success" style="width: 100%; margin-top: 15px; display: none; padding: 15px;">💾 Simpan Absensi & Catatan</button>
                 </form>
             </div>
 
@@ -194,7 +203,7 @@
 
         let guruId = null;
         let userRoles = [];
-        let curAnggotaKelas = []; // Penyimpan sementara id anggota_kelas yg sedang aktif dilayar
+        let curAnggotaKelas = []; 
 
         // --- UI NAVIGATION ---
         window.switchTab = (tabId, element) => {
@@ -224,7 +233,7 @@
                 if(userRoles.includes('admin') || userRoles.includes('pembina_ekstra')) document.getElementById('nav-ekskul').style.display = 'flex';
             }
 
-            // 3. Load Master Data Dropdowns (Kelas, Mapel, P5, Ekskul)
+            // 3. Load Master Data Dropdowns
             loadMasterDropdowns();
         }
 
@@ -274,7 +283,6 @@
             document.getElementById('tabel-akademik').style.display = 'table';
             document.getElementById('btn-simpan-ak').style.display = 'none';
 
-            // Dapatkan Pengampu ID
             let pengampuId = null;
             const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
             if(pgm) pengampuId = pgm.id;
@@ -282,7 +290,6 @@
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa di kelas ini.</td></tr>';
 
-            // Dapatkan nilai lama
             let mapNilai = {};
             if (pengampuId) {
                 const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId);
@@ -294,14 +301,11 @@
                 const n = mapNilai[a.id] || {};
                 tbody.innerHTML += `<tr>
                     <td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td>
-                    <td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td>
-                    <td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td>
-                    <td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td>
-                    <td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td>
-                    <td>
-                        <button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px; width: 100%;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button>
-                        <button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem; width: 100%;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button>
-                    </td>
+                    <td><input type="number" id="ak_f_${a.id}" value="${n.nilai_formatif || ''}"></td>
+                    <td><input type="number" id="ak_s_${a.id}" value="${n.nilai_sumatif || ''}"></td>
+                    <td><input type="number" id="ak_sas_${a.id}" value="${n.nilai_sas || ''}"></td>
+                    <td><input type="number" id="ak_na_${a.id}" value="${n.nilai_akhir || ''}"></td>
+                    <td><textarea id="ak_desc_${a.id}">${n.deskripsi_capaian || ''}</textarea></td>
                 </tr>`;
             });
             document.getElementById('btn-simpan-ak').style.display = 'block';
@@ -331,18 +335,18 @@
         });
 
         // ==========================================
-        // MODULE 2: WALI KELAS (ABSEN & CATATAN)
+        // MODULE 2: WALI KELAS (ABSEN, CATATAN & CETAK)
         // ==========================================
         window.loadSiswaWalas = async () => {
             const kelasId = document.getElementById('wl_kelas').value;
             const tbody = document.getElementById('tbody-walas');
             if(!kelasId) return alert("Pilih Kelas!");
-            tbody.innerHTML = '<tr><td colspan="5">Memuat data...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>';
             document.getElementById('tabel-walas').style.display = 'table';
             document.getElementById('btn-simpan-wl').style.display = 'none';
 
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
-            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="5" style="color:red">Tidak ada siswa.</td></tr>';
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa.</td></tr>';
 
             const { data: absenExisting } = await supabase.from('absensi_catatan').select('*').in('anggota_kelas_id', anggota.map(a=>a.id));
             let mapAbsen = {}; if(absenExisting) absenExisting.forEach(n => mapAbsen[n.anggota_kelas_id] = n);
@@ -350,12 +354,17 @@
             curAnggotaKelas = anggota; tbody.innerHTML = '';
             anggota.forEach(a => {
                 const n = mapAbsen[a.id] || {};
+                // Baris ini yang menambahkan tombol cetak
                 tbody.innerHTML += `<tr>
                     <td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td>
                     <td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td>
                     <td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td>
                     <td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td>
                     <td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px; width: 100%;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button>
+                        <button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem; width: 100%;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button>
+                    </td>
                 </tr>`;
             });
             document.getElementById('btn-simpan-wl').style.display = 'block';
@@ -421,7 +430,7 @@
 
             for(let a of curAnggotaKelas) {
                 const c = document.getElementById(`p5_c_${a.id}`).value; const desc = document.getElementById(`p5_desc_${a.id}`).value;
-                if(!c) continue; // Skip jika capaian kosong
+                if(!c) continue; 
                 const { data: cek } = await supabase.from('nilai_p5').select('id').eq('anggota_kelas_id', a.id).eq('proyek_id', pId).eq('dimensi', dim).single();
                 if(cek) await supabase.from('nilai_p5').update({capaian: c, catatan: desc}).eq('id', cek.id);
                 else await supabase.from('nilai_p5').insert([{anggota_kelas_id: a.id, proyek_id: pId, dimensi: dim, capaian: c, catatan: desc}]);
@@ -472,7 +481,7 @@
 
             for(let a of curAnggotaKelas) {
                 const p = document.getElementById(`ek_p_${a.id}`).value; const desc = document.getElementById(`ek_desc_${a.id}`).value;
-                if(!p && !desc) continue; // Skip jika kosong
+                if(!p && !desc) continue; 
                 const { data: cek } = await supabase.from('nilai_ekskul').select('id').eq('anggota_kelas_id', a.id).eq('ekskul_id', eId).single();
                 if(cek) await supabase.from('nilai_ekskul').update({predikat: p, deskripsi: desc}).eq('id', cek.id);
                 else await supabase.from('nilai_ekskul').insert([{anggota_kelas_id: a.id, ekskul_id: eId, predikat: p, deskripsi: desc}]);
@@ -480,7 +489,7 @@
             alert("✅ Nilai Ekstrakurikuler berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai Ekstrakurikuler'; btn.disabled = false;
         });
 
-        // --- Fitur CSV Akademik (Tetap Dipertahankan) ---
+        // --- Fitur CSV Akademik ---
         document.getElementById('btn-download-csv').addEventListener('click', () => {
             let dataLaporan = curAnggotaKelas.map(a => {
                 return { "NISN": a.siswa.nisn, "NAMA_SISWA": a.siswa.nama_lengkap, "FORMATIF": document.getElementById(`ak_f_${a.id}`).value || '', "SUMATIF": document.getElementById(`ak_s_${a.id}`).value || '', "SAS": document.getElementById(`ak_sas_${a.id}`).value || '', "NILAI_AKHIR": document.getElementById(`ak_na_${a.id}`).value || '', "DESKRIPSI_CAPAIAN": document.getElementById(`ak_desc_${a.id}`).value || '' }
@@ -514,4 +523,3 @@
     </script>
 </body>
 </html>
-
