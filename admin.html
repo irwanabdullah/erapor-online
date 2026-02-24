@@ -109,6 +109,32 @@
 
         <h3 style="margin-top: 30px;">📦 Kelola Master Data SQL</h3>
         <div class="grid-3">
+            <form id="form-proyek-p5" style="border: 1px solid #e83e8c; background: #fff0f6;">
+                <label style="color: #e83e8c;">🌟 Tambah Proyek P5</label>
+                
+                <input type="text" id="nama_proyek" placeholder="Nama Proyek (Contoh: Pembuatan Kompos)" required style="margin-top: 10px;">
+                
+                <select id="tema_proyek" required>
+                    <option value="">-- Pilih Tema P5 --</option>
+                    <option value="Gaya Hidup Berkelanjutan">Gaya Hidup Berkelanjutan</option>
+                    <option value="Kearifan Lokal">Kearifan Lokal</option>
+                    <option value="Bhinneka Tunggal Ika">Bhinneka Tunggal Ika</option>
+                    <option value="Bangunlah Jiwa dan Raganya">Bangunlah Jiwa dan Raganya</option>
+                    <option value="Suara Demokrasi">Suara Demokrasi</option>
+                    <option value="Rekayasa dan Teknologi">Rekayasa dan Teknologi</option>
+                    <option value="Kewirausahaan">Kewirausahaan</option>
+                </select>
+
+                <select id="koordinator_id" required>
+                    <option value="">-- Memuat Koordinator... --</option>
+                </select>
+
+                <select id="p5_tahun_ajaran" required>
+                    <option value="">-- Memuat Tahun Ajaran... --</option>
+                </select>
+
+                <button type="submit" class="btn-submit" style="background-color: #e83e8c;">Simpan Proyek P5</button>
+            </form>
             <form id="form-tapel">
                 <label>Tahun Ajaran Baru</label>
                 <input type="text" id="nama_tapel" placeholder="Contoh: 2023/2024" required>
@@ -348,4 +374,5 @@
     </script>
 </body>
 </html>
+
 
