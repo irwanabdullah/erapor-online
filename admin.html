@@ -97,7 +97,7 @@
 
         /* --- CHECKBOX & CSV --- */
         .checkbox-box {
-            background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto;
+            background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; max-height: 250px; overflow-y: auto;
         }
         .checkbox-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; cursor: pointer; border-radius: 4px; margin: 0;}
         .checkbox-item:hover { background-color: #e2e8f0; }
@@ -135,19 +135,25 @@
             <div id="tab-role" class="tab-section active">
                 <div class="card" style="max-width: 600px;">
                     <h3>👥 Berikan Hak Akses Pengguna</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Pilih akun guru, lalu centang peran yang akan diberikan. Satu guru bisa memiliki lebih dari satu peran.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Pilih akun guru, lalu centang peran yang akan diberikan. Satu guru bisa memiliki lebih dari satu peran (Misal: Guru & Wali Kelas sekaligus).</p>
                     
                     <form id="form-role">
                         <label>Pilih Akun Pengguna</label>
                         <select id="select-user" required><option value="">Memuat data...</option></select>
                         
-                        <label>Akses yang diberikan (Multi-Role)</label>
+                        <label>Akses yang diberikan (Bisa centang banyak)</label>
                         <div class="checkbox-box" style="margin-top: 5px;">
                             <label class="checkbox-item">
                                 <input type="checkbox" name="role_cek" value="guru"> 🎓 Guru Mata Pelajaran
                             </label>
                             <label class="checkbox-item">
                                 <input type="checkbox" name="role_cek" value="wali_kelas"> 👨‍🏫 Wali Kelas
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="role_cek" value="koordinator_p5"> 🌟 Koordinator Proyek P5
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="role_cek" value="pembina_ekstra"> ⚽ Pembina Ekstrakurikuler
                             </label>
                             <label class="checkbox-item">
                                 <input type="checkbox" name="role_cek" value="admin"> ⚙️ Administrator
@@ -337,7 +343,7 @@
             if (data) {
                 allUsersData = data;
                 selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>'
-                selectKoordinator.innerHTML = '<option value="">-- Pilih Guru --</option>'
+                selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>'
                 data.forEach(user => {
                     selectUser.innerHTML += `<option value="${user.id}">${user.full_name} (${user.roles.join(', ')})</option>`
                     selectKoordinator.innerHTML += `<option value="${user.id}">${user.full_name}</option>`
