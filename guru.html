@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Input Nilai Akademik | e-Rapor Online</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: #fff; }
@@ -13,13 +14,19 @@
         input[type="number"] { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
         textarea { width: 100%; height: 50px; padding: 5px; box-sizing: border-box; resize: vertical; }
         .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .btn-simpan-semua { background-color: #28a745; color: white; padding: 15px; font-size: 1.1em; width: 100%; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        .btn-submit { background-color: #28a745; color: white; padding: 15px; font-size: 1.1em; width: 100%; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        
+        /* Desain area CSV */
+        .csv-box { background-color: #f8f9fa; border: 2px dashed #ccc; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
+        .btn-csv { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-download { background-color: #17a2b8; color: white; }
+        .btn-upload { background-color: #ffc107; color: black; }
     </style>
 </head>
 <body>
     <div class="container" style="max-width: 1200px;">
         <div class="header">
-            <h2>📝 Input Nilai Akademik (Database Relasional)</h2>
+            <h2>📝 Input Nilai Akademik</h2>
             <a href="dashboard.html"><button>Kembali ke Dashboard</button></a>
         </div>
 
@@ -35,6 +42,18 @@
                 </div>
             </div>
         </div>
+
+        <div id="csv-tools" class="csv-box">
+            <h4 style="margin-top: 0; color: #333;">📊 Fitur Offline (Excel/CSV)</h4>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Download template daftar siswa, isi nilainya di komputer Anda, lalu upload kembali ke sini.</p>
+            
+            <button id="btn-download-csv" class="btn-csv btn-download">⬇️ 1. Download Template Kelas Ini</button>
+            
+            <div style="display: inline-block; border-left: 2px solid #ccc; padding-left: 15px; margin-left: 10px;">
+                <input type="file" id="file-csv-nilai" accept=".csv" style="font-size: 0.9em;">
+                <button id="btn-upload-csv" class="btn-csv btn-upload">⬆️ 2. Upload Nilai CSV</button>
+            </div>
+        </div>
         
         <p id="pesan-sistem" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
 
@@ -43,7 +62,7 @@
                 <table id="tabel-utama" style="display: none;">
                     <thead>
                         <tr>
-                            <th width="20%">Nama Siswa</th>
+                            <th width="20%">Nama Siswa (NISN)</th>
                             <th width="10%">Formatif</th>
                             <th width="10%">Sumatif</th>
                             <th width="10%">SAS</th>
@@ -53,7 +72,7 @@
                     </thead>
                     <tbody id="tabel-siswa"></tbody>
                 </table>
-                <button type="submit" id="btn-submit" class="btn-simpan-semua" style="display: none;">💾 Simpan Semua Nilai</button>
+                <button type="submit" id="btn-submit" class="btn-submit" style="display: none;">💾 Simpan Semua Nilai ke Database</button>
             </form>
         </div>
     </div>
@@ -62,14 +81,13 @@
         import { supabase, checkSession } from './app.js'
 
         let guruId = null;
-        let dataAnggotaKelas = []; // Menyimpan ID anggota_kelas
+        let dataAnggotaKelas = []; 
 
         async function initGuru() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
             guruId = session.user.id;
 
-            // Load Master Data (Mapel & Kelas yang menggunakan UUID)
             const selectMapel = document.getElementById('mapel')
             const selectKelas = document.getElementById('kelas')
 
@@ -95,46 +113,124 @@
             const tbody = document.getElementById('tabel-siswa')
             const tabelUtama = document.getElementById('tabel-utama')
             const btnSubmit = document.getElementById('btn-submit')
+            const csvTools = document.getElementById('csv-tools')
 
             if (!kelasId || !mapelId) {
-                tabelUtama.style.display = 'none'; btnSubmit.style.display = 'none'; return;
+                tabelUtama.style.display = 'none'; btnSubmit.style.display = 'none'; csvTools.style.display = 'none'; return;
             }
 
-            tbody.innerHTML = '<tr><td colspan="6">Memuat data relasional dari database...</td></tr>'
-            tabelUtama.style.display = 'table'; btnSubmit.style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data siswa dan nilai (jika ada)...</td></tr>'
+            tabelUtama.style.display = 'table'; 
 
-            // Menggunakan sintaks JOIN Supabase untuk tabel anggota_kelas -> siswa
-            const { data: anggota, error } = await supabase
-                .from('anggota_kelas')
-                .select(`id, siswa_id, siswa(nama_lengkap, nisn)`)
-                .eq('kelas_id', kelasId)
+            // 1. Dapatkan pengampu_mapel_id jika sudah ada (untuk load nilai lama)
+            let pengampuId = null;
+            const { data: pengampu } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single()
+            if (pengampu) pengampuId = pengampu.id;
+
+            // 2. Load daftar siswa di kelas ini
+            const { data: anggota, error } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId)
 
             if (error || !anggota || anggota.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Tidak ada siswa di kelas ini. Masukkan siswa ke 'anggota_kelas' terlebih dahulu di database.</td></tr>`
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Tidak ada siswa di kelas ini.</td></tr>`
+                csvTools.style.display = 'none';
                 return
+            }
+
+            // 3. Load nilai lama jika ada
+            let mapNilaiLama = {};
+            if (pengampuId) {
+                const listAnggotaId = anggota.map(a => a.id);
+                const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').in('anggota_kelas_id', listAnggotaId).eq('pengampu_mapel_id', pengampuId);
+                if (nilaiExisting) {
+                    nilaiExisting.forEach(n => { mapNilaiLama[n.anggota_kelas_id] = n; });
+                }
             }
 
             dataAnggotaKelas = anggota;
             tbody.innerHTML = '';
 
-            // Render form tabel untuk masing-masing anggota kelas
+            // Render baris tabel
             anggota.forEach(a => {
+                const n = mapNilaiLama[a.id] || {};
                 const tr = document.createElement('tr')
                 tr.innerHTML = `
-                    <td style="text-align: left;"><strong>${a.siswa.nama_lengkap}</strong></td>
-                    <td><input type="number" id="formatif_${a.id}" placeholder="0"></td>
-                    <td><input type="number" id="sumatif_${a.id}" placeholder="0"></td>
-                    <td><input type="number" id="sas_${a.id}" placeholder="0"></td>
-                    <td><input type="number" id="akhir_${a.id}" placeholder="0"></td>
-                    <td><textarea id="deskripsi_${a.id}" placeholder="Deskripsi..."></textarea></td>
+                    <td style="text-align: left;"><strong>${a.siswa.nama_lengkap}</strong><br><small style="color:gray;">NISN: ${a.siswa.nisn}</small></td>
+                    <td><input type="number" id="formatif_${a.id}" value="${n.nilai_formatif || ''}"></td>
+                    <td><input type="number" id="sumatif_${a.id}" value="${n.nilai_sumatif || ''}"></td>
+                    <td><input type="number" id="sas_${a.id}" value="${n.nilai_sas || ''}"></td>
+                    <td><input type="number" id="akhir_${a.id}" value="${n.nilai_akhir || ''}"></td>
+                    <td><textarea id="deskripsi_${a.id}">${n.deskripsi_capaian || ''}</textarea></td>
                 `
                 tbody.appendChild(tr)
             })
 
             btnSubmit.style.display = 'block';
+            csvTools.style.display = 'block'; // Tampilkan menu CSV
         }
 
-        // Simpan Data
+        // --- FITUR CSV: DOWNLOAD TEMPLATE ---
+        document.getElementById('btn-download-csv').addEventListener('click', () => {
+            // Ambil data dari tabel web saat ini untuk dijadikan Excel
+            let dataLaporan = dataAnggotaKelas.map(a => {
+                return {
+                    "NISN": a.siswa.nisn,
+                    "NAMA_SISWA": a.siswa.nama_lengkap,
+                    "FORMATIF": document.getElementById(`formatif_${a.id}`).value || '',
+                    "SUMATIF": document.getElementById(`sumatif_${a.id}`).value || '',
+                    "SAS": document.getElementById(`sas_${a.id}`).value || '',
+                    "NILAI_AKHIR": document.getElementById(`akhir_${a.id}`).value || '',
+                    "DESKRIPSI_CAPAIAN": document.getElementById(`deskripsi_${a.id}`).value || ''
+                }
+            });
+
+            // Ubah Array JSON menjadi format CSV menggunakan PapaParse
+            let csv = Papa.unparse(dataLaporan);
+            
+            // Proses Download otomatis
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a");
+            let mapelName = document.getElementById('mapel').options[document.getElementById('mapel').selectedIndex].text;
+            let kelasName = document.getElementById('kelas').options[document.getElementById('kelas').selectedIndex].text;
+            
+            link.href = URL.createObjectURL(blob);
+            link.download = `Template_Nilai_${mapelName}_${kelasName}.csv`;
+            link.click();
+        });
+
+        // --- FITUR CSV: UPLOAD NILAI ---
+        document.getElementById('btn-upload-csv').addEventListener('click', () => {
+            const fileInput = document.getElementById('file-csv-nilai');
+            if (!fileInput.files.length) return alert("⚠️ Silakan pilih file CSV terlebih dahulu!");
+
+            Papa.parse(fileInput.files[0], {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const dataCSV = results.data;
+                    let sukses = 0;
+
+                    // Cocokkan data dari CSV ke kotak Input di HTML berdasarkan NISN
+                    dataCSV.forEach(row => {
+                        // Cari anggota kelas yang NISN-nya cocok dengan di CSV
+                        const anggota = dataAnggotaKelas.find(a => a.siswa.nisn == row.NISN);
+                        if (anggota) {
+                            // Isi kotak input di HTML
+                            if(row.FORMATIF) document.getElementById(`formatif_${anggota.id}`).value = row.FORMATIF;
+                            if(row.SUMATIF) document.getElementById(`sumatif_${anggota.id}`).value = row.SUMATIF;
+                            if(row.SAS) document.getElementById(`sas_${anggota.id}`).value = row.SAS;
+                            if(row.NILAI_AKHIR) document.getElementById(`akhir_${anggota.id}`).value = row.NILAI_AKHIR;
+                            if(row.DESKRIPSI_CAPAIAN) document.getElementById(`deskripsi_${anggota.id}`).value = row.DESKRIPSI_CAPAIAN;
+                            sukses++;
+                        }
+                    });
+
+                    alert(`✅ Berhasil memuat ${sukses} data nilai dari file ke layar!\n\n⚠️ PENTING: Nilai BELUM tersimpan ke database. Silakan periksa, lalu klik tombol hijau "Simpan Semua Nilai" di paling bawah.`);
+                    fileInput.value = ''; // Reset input file
+                }
+            });
+        });
+
+        // --- SIMPAN KE DATABASE (TIDAK BERUBAH) ---
         document.getElementById('form-nilai').addEventListener('submit', async (e) => {
             e.preventDefault()
             const btnSubmit = document.getElementById('btn-submit')
@@ -146,9 +242,7 @@
             btnSubmit.textContent = 'Menyimpan ke tabel nilai_akademik...';
 
             try {
-                // 1. Dapatkan atau Buat Pengampu Mapel (Sesuai SQL)
-                let { data: pengampu } = await supabase.from('pengampu_mapel')
-                    .select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single()
+                let { data: pengampu } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single()
                 
                 let pengampuId;
                 if (!pengampu) {
@@ -160,7 +254,6 @@
                     pengampuId = pengampu.id;
                 }
 
-                // 2. Simpan nilai ke tabel nilai_akademik menggunakan Promise.all
                 const promises = dataAnggotaKelas.map(async (anggota) => {
                     const formatif = document.getElementById(`formatif_${anggota.id}`).value || 0;
                     const sumatif = document.getElementById(`sumatif_${anggota.id}`).value || 0;
@@ -168,21 +261,22 @@
                     const akhir = document.getElementById(`akhir_${anggota.id}`).value || 0;
                     const deskripsi = document.getElementById(`deskripsi_${anggota.id}`).value;
 
-                    // Menggunakan UPSERT (Jika kombinasi anggota_kelas & pengampu belum ada, insert. Jika ada, update).
-                    // Catatan: Pastikan Anda menambahkan UNIQUE(anggota_kelas_id, pengampu_mapel_id) di tabel nilai_akademik di SQL nanti.
-                    await supabase.from('nilai_akademik').insert([{
-                        anggota_kelas_id: anggota.id,
-                        pengampu_mapel_id: pengampuId,
-                        nilai_formatif: formatif,
-                        nilai_sumatif: sumatif,
-                        nilai_sas: sas,
-                        nilai_akhir: akhir,
-                        deskripsi_capaian: deskripsi
-                    }]);
+                    // Menggunakan metode update/insert agar tidak ganda
+                    const { data: cekNilai } = await supabase.from('nilai_akademik').select('id').eq('anggota_kelas_id', anggota.id).eq('pengampu_mapel_id', pengampuId).single();
+
+                    if(cekNilai) {
+                        await supabase.from('nilai_akademik').update({
+                            nilai_formatif: formatif, nilai_sumatif: sumatif, nilai_sas: sas, nilai_akhir: akhir, deskripsi_capaian: deskripsi
+                        }).eq('id', cekNilai.id);
+                    } else {
+                        await supabase.from('nilai_akademik').insert([{
+                            anggota_kelas_id: anggota.id, pengampu_mapel_id: pengampuId,
+                            nilai_formatif: formatif, nilai_sumatif: sumatif, nilai_sas: sas, nilai_akhir: akhir, deskripsi_capaian: deskripsi
+                        }]);
+                    }
                 });
 
                 await Promise.all(promises);
-                
                 pesan.style.color = 'green';
                 pesan.textContent = '✅ Berhasil menyimpan semua nilai akademik!';
             } catch (error) {
@@ -191,7 +285,7 @@
             }
 
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '💾 Simpan Semua Nilai';
+            btnSubmit.innerHTML = '💾 Simpan Semua Nilai ke Database';
         });
 
         initGuru()
