@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Guru | e-Rapor Online</title>
+    <title>Portal Guru & Staf | e-Rapor Online</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #059669; /* Warna hijau elegan untuk membedakan dengan Admin (Biru) */
+            --primary: #059669; /* Hijau Zamrud untuk Guru */
             --primary-dark: #047857;
             --sidebar-bg: #064e3b;
             --sidebar-hover: #10b981;
@@ -35,8 +36,7 @@
         }
         .sidebar-header {
             padding: 24px; font-size: 1.25rem; font-weight: 700;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px;
         }
         .sidebar-menu { list-style: none; padding: 15px 0; margin: 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li { padding: 0 15px; margin-bottom: 8px; }
@@ -49,20 +49,17 @@
         .logout-btn {
             margin: 20px; padding: 12px; background-color: var(--danger); color: white;
             border: none; border-radius: 8px; cursor: pointer; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .logout-btn:hover { background-color: #dc2626; }
 
         /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .topbar {
-            background: var(--white); padding: 20px 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
+            background: var(--white); padding: 20px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
         }
         .topbar h2 { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--sidebar-bg); }
-        .user-info { font-size: 0.95rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-        .role-badge { background: #d1fae5; color: #047857; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .user-info { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
         .content-area { flex: 1; padding: 30px; overflow-y: auto; }
 
         /* --- TABS SYSTEM --- */
@@ -75,39 +72,41 @@
             background: var(--white); border-radius: 12px; padding: 24px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px;
         }
-        .card-header { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .card-header { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
         .card-header h3 { margin: 0; font-size: 1.1rem; color: var(--primary-dark); }
         
-        .filter-bar { display: flex; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; align-items: flex-end;}
-        .filter-group { flex: 1; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; align-items: flex-end;}
         
         label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; }
-        select, input[type="text"], input[type="number"] {
+        select, input[type="text"], input[type="number"], textarea {
             width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
             border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
             background: #fff; transition: 0.2s; box-sizing: border-box;
         }
-        select:focus, input:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        select:focus, input:focus, textarea:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
 
         .btn {
-            padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer;
+            padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; width: 100%;
             font-weight: 600; font-size: 0.9rem; transition: 0.2s; font-family: 'Inter', sans-serif;
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
         .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-primary { background-color: var(--primary); color: #fff; }
         .btn-success { background-color: var(--success); color: #fff; }
+        .btn-warning { background-color: var(--warning); color: #000; }
+        .btn-danger { background-color: var(--danger); color: #fff; }
+        .btn-dark { background-color: #374151; color: #fff; }
 
-        /* --- TABEL EXCEL-STYLE --- */
-        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+        /* --- TABEL --- */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: #fff; }
-        th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
-        th { background-color: #f1f5f9; font-weight: 600; color: var(--text-main); text-align: center; }
-        td input[type="number"], td input[type="text"], td select { border: 1px solid transparent; background: transparent; padding: 6px; width: 100%; text-align: center; border-radius: 4px;}
-        td input:focus, td select:focus { border: 1px solid var(--primary); background: #f0fdf4; }
-        td:last-child, th:last-child { border-right: none; }
-        tbody tr:hover { background-color: #f8fafc; }
-        .col-nama { text-align: left !important; font-weight: 500; width: 250px; }
+        th, td { padding: 10px 12px; text-align: center; border: 1px solid var(--border-color); vertical-align: middle; }
+        th { background-color: #f1f5f9; font-weight: 600; color: var(--text-main); }
+        td input[type="number"] { width: 60px; text-align: center; padding: 6px; border: 1px solid transparent; background: transparent; }
+        td textarea { height: 40px; resize: vertical; border: 1px solid transparent; background: transparent; }
+        td input:focus, td textarea:focus, td select:focus { border: 1px solid var(--primary); background: #f0fdf4; }
+        td select { border: 1px solid transparent; background: transparent; padding: 6px; }
+        
+        .csv-box { background: #f0fdf4; border: 2px dashed #a7f3d0; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;}
     </style>
 </head>
 <body>
@@ -115,224 +114,170 @@
     <aside class="sidebar">
         <div class="sidebar-header">👨‍🏫 Portal Guru</div>
         <ul class="sidebar-menu">
-            <li><a class="nav-link active" data-target="page-dashboard">🏠 Beranda Guru</a></li>
-            <li><a class="nav-link" data-target="page-nilai-akademik">📝 Nilai Akademik</a></li>
-            <li><a class="nav-link" data-target="page-nilai-p5">🌟 Penilaian Proyek P5</a></li>
-            <li class="walas-menu"><a class="nav-link" data-target="page-walas-kehadiran">📅 Input Kehadiran</a></li>
-            <li class="walas-menu"><a class="nav-link" data-target="page-walas-catatan">✍️ Catatan Wali Kelas</a></li>
-            <li class="walas-menu"><a class="nav-link" data-target="page-cetak-rapor">🖨️ Cetak Rapor</a></li>
+            <li><a class="nav-link active" data-target="tab-home">🏠 Beranda Guru</a></li>
+            <li><a class="nav-link" data-target="tab-profil">👤 Profil & NIP Saya</a></li>
+            <li id="nav-guru" style="display: none;"><a class="nav-link" data-target="tab-akademik">📝 Nilai Akademik</a></li>
+            <li id="nav-walas" style="display: none;"><a class="nav-link" data-target="tab-walas">👨‍🏫 Wali Kelas (Leger)</a></li>
+            <li id="nav-p5" style="display: none;"><a class="nav-link" data-target="tab-p5">🌟 Proyek P5</a></li>
+            <li id="nav-ekskul" style="display: none;"><a class="nav-link" data-target="tab-ekskul">⚽ Ekstrakurikuler</a></li>
         </ul>
-        <button id="btn-logout" class="logout-btn">🚪 Keluar Sistem</button>
+        <div style="padding: 20px;">
+            <button id="btn-logout" class="logout-btn" style="width: 100%;">🚪 Keluar Sistem</button>
+        </div>
     </aside>
 
     <main class="main-content">
         <header class="topbar">
-            <h2 id="topbar-title">Beranda Guru</h2>
-            <div class="user-info">
-                <span id="guru-nama">Memuat Nama...</span>
-                <span id="guru-role" class="role-badge">Guru</span>
-            </div>
+            <h2 id="page-title">Beranda Guru</h2>
+            <div id="user-info" class="user-info">Memuat...</div>
         </header>
 
         <div class="content-area">
             
-            <div id="page-dashboard" class="page-section active">
-                <div class="card">
-                    <div class="card-header"><h3>👋 Selamat Datang, <span class="nama-sapaan">Bapak/Ibu Guru</span></h3></div>
-                    <p style="color: var(--text-muted); line-height: 1.6;">
-                        Ini adalah portal e-Rapor Kurikulum Merdeka. Melalui portal ini, Anda dapat mengelola nilai secara langsung tanpa harus repot mengumpulkan file Excel manual ke tata usaha.<br><br>
-                        <b>Panduan Singkat:</b><br>
-                        1. Gunakan menu <b>Nilai Akademik</b> untuk menginput Nilai Formatif & Sumatif Lingkup Materi.<br>
-                        2. Jika Anda adalah Koordinator, gunakan menu <b>Penilaian P5</b>.<br>
-                        3. Nilai otomatis tersimpan setiap kali Anda menekan tombol <i>Simpan Nilai</i> di bawah tabel.
-                    </p>
+            <div id="tab-home" class="page-section active">
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <h2>Selamat Datang di Portal Input e-Rapor</h2>
+                    <p style="color: var(--text-muted);">Menu di sebelah kiri telah disesuaikan secara otomatis berdasarkan jabatan / role yang diberikan oleh Administrator kepada Anda. Silakan kelola nilai melalui menu yang tersedia.</p>
                 </div>
             </div>
 
-            <div id="page-nilai-akademik" class="page-section">
-                <div class="card">
-                    <div class="card-header"><h3>📝 Input Nilai Formatif & Sumatif</h3></div>
-                    
-                    <div class="filter-bar">
-                        <div class="filter-group">
-                            <label>Pilih Kelas</label>
-                            <select id="filter-kelas-akademik">
-                                <option value="">-- Memuat Kelas Anda --</option>
-                                <option value="1">VII-A</option>
-                                <option value="2">VII-B</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Mata Pelajaran</label>
-                            <select id="filter-mapel-akademik">
-                                <option value="">-- Memuat Mapel Anda --</option>
-                                <option value="IPA">Ilmu Pengetahuan Alam (IPA)</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" id="btn-tampilkan-nilai" style="height: 38px;">🔍 Tampilkan Lembar Nilai</button>
-                    </div>
-
-                    <div class="table-responsive" id="area-tabel-nilai" style="display: none;">
-                        <table id="tabel-input-nilai">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2" style="width: 40px;">No</th>
-                                    <th rowspan="2" class="col-nama">Nama Siswa</th>
-                                    <th colspan="3" style="background: #e0f2fe; color: #0284c7;">Nilai Formatif (TP)</th>
-                                    <th colspan="2" style="background: #fef08a; color: #854d0e;">Nilai Sumatif (LM)</th>
-                                    <th rowspan="2" style="background: #dcfce7; color: #166534;">Sumatif Akhir (SAS)</th>
-                                </tr>
-                                <tr>
-                                    <th style="background: #e0f2fe;">TP 1</th>
-                                    <th style="background: #e0f2fe;">TP 2</th>
-                                    <th style="background: #e0f2fe;">TP 3</th>
-                                    <th style="background: #fef08a;">LM 1</th>
-                                    <th style="background: #fef08a;">LM 2</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="text-align: center;">1</td>
-                                    <td class="col-nama">Ahmad Budi Santoso</td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-" style="font-weight: bold; color: #166534;"></td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align: center;">2</td>
-                                    <td class="col-nama">Siti Aminah</td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-"></td>
-                                    <td><input type="number" min="0" max="100" placeholder="-" style="font-weight: bold; color: #166534;"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="margin-top: 20px; text-align: right;">
-                            <button class="btn btn-success" style="font-size: 1rem; padding: 12px 24px;">💾 Simpan Semua Nilai</button>
-                        </div>
-                    </div>
+            <div id="tab-profil" class="page-section">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="card-header"><h3>👤 Pengaturan Profil Guru</h3></div>
+                    <form id="form-profil">
+                        <label>Nama Lengkap (Beserta Gelar)</label>
+                        <input type="text" id="prof_nama" required style="margin-bottom: 15px;">
+                        <label>NIP (Nomor Induk Pegawai)</label>
+                        <input type="text" id="prof_nip" placeholder="Kosongkan jika Non-PNS">
+                        <button type="submit" id="btn-simpan-profil" class="btn btn-dark" style="margin-top: 20px;">💾 Simpan Profil</button>
+                    </form>
                 </div>
             </div>
 
-            <div id="page-nilai-p5" class="page-section">
+            <div id="tab-akademik" class="page-section">
                 <div class="card">
-                    <div class="card-header"><h3>🌟 Penilaian Proyek Penguatan Profil Pelajar Pancasila (P5)</h3></div>
-                    <div class="filter-bar">
-                        <div class="filter-group">
-                            <label>Pilih Kelas</label><select><option>VII-A</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Pilih Proyek (Tema)</label><select><option>Suara Demokrasi</option></select>
-                        </div>
-                        <button class="btn btn-primary" onclick="document.getElementById('area-tabel-p5').style.display='block'">🔍 Tampilkan</button>
-                    </div>
-
-                    <div class="table-responsive" id="area-tabel-p5" style="display: none;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th class="col-nama">Nama Siswa</th>
-                                    <th>Dimensi 1: Gotong Royong</th>
-                                    <th>Dimensi 2: Bernalar Kritis</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="text-align: center;">1</td>
-                                    <td class="col-nama">Ahmad Budi Santoso</td>
-                                    <td>
-                                        <select>
-                                            <option value="">- Capaian -</option>
-                                            <option value="BB">Belum Berkembang (BB)</option>
-                                            <option value="MB">Mulai Berkembang (MB)</option>
-                                            <option value="BSH">Berkembang Sesuai Harapan (BSH)</option>
-                                            <option value="SAB">Sangat Berkembang (SAB)</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select>
-                                            <option value="">- Capaian -</option>
-                                            <option value="BB">Belum Berkembang (BB)</option>
-                                            <option value="MB">Mulai Berkembang (MB)</option>
-                                            <option value="BSH">Berkembang Sesuai Harapan (BSH)</option>
-                                            <option value="SAB">Sangat Berkembang (SAB)</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="margin-top: 20px; text-align: right;">
-                            <button class="btn btn-success">💾 Simpan Nilai P5</button>
-                        </div>
+                    <div class="filter-grid">
+                        <div><label>Mata Pelajaran</label><select id="ak_mapel"><option value="">- Pilih Mapel -</option></select></div>
+                        <div><label>Kelas</label><select id="ak_kelas" class="kelas-dropdown"><option value="">- Pilih Kelas -</option></select></div>
+                        <div><button class="btn btn-primary" onclick="loadSiswaAkademik()">🔍 Tampilkan Siswa</button></div>
                     </div>
                 </div>
-            </div>
 
-            <div id="page-walas-kehadiran" class="page-section">
-                <div class="card">
-                    <div class="card-header"><h3>📅 Input Kehadiran Siswa</h3></div>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top:0;">Anda saat ini bertindak sebagai Wali Kelas VII-A.</p>
+                <div id="ak_csv_tools" class="csv-box" style="display: none;">
+                    <button id="btn-download-csv" class="btn btn-success" style="width: auto; padding: 10px 20px;">⬇️ Download Template CSV</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="file" id="file-csv-nilai" accept=".csv" style="padding: 5px;">
+                        <button id="btn-upload-csv" class="btn btn-warning" style="width: auto;">⬆️ Upload CSV</button>
+                    </div>
+                </div>
+
+                <form id="form-akademik">
                     <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th class="col-nama">Nama Siswa</th>
-                                    <th style="width: 100px;">Sakit (Hari)</th>
-                                    <th style="width: 100px;">Izin (Hari)</th>
-                                    <th style="width: 100px;">Tanpa Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="text-align: center;">1</td>
-                                    <td class="col-nama">Ahmad Budi Santoso</td>
-                                    <td><input type="number" min="0" placeholder="0"></td>
-                                    <td><input type="number" min="0" placeholder="0"></td>
-                                    <td><input type="number" min="0" placeholder="0"></td>
-                                </tr>
-                            </tbody>
+                        <table id="tabel-akademik" style="display: none;">
+                            <thead><tr><th>Nama Siswa (NISN)</th><th>Formatif</th><th>Sumatif</th><th>SAS</th><th>Nilai Akhir</th><th>Deskripsi Capaian</th></tr></thead>
+                            <tbody id="tbody-akademik"></tbody>
                         </table>
-                        <div style="margin-top: 20px; text-align: right;"><button class="btn btn-success">💾 Simpan Kehadiran</button></div>
                     </div>
-                </div>
+                    <button type="submit" id="btn-simpan-ak" class="btn btn-primary" style="display: none; padding: 15px; font-size: 1rem;">💾 Simpan Nilai Akademik</button>
+                </form>
             </div>
 
-            <div id="page-cetak-rapor" class="page-section">
-                <div class="card" style="text-align: center; padding: 50px 20px;">
-                    <div style="font-size: 3rem; margin-bottom: 20px;">🖨️</div>
-                    <h3 style="margin-bottom: 10px;">Cetak Dokumen e-Rapor</h3>
-                    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 30px auto;">Pilih siswa dari kelas perwalian Anda untuk men-generate dokumen Rapor Kurikulum Merdeka dalam format PDF siap cetak.</p>
-                    
-                    <div style="max-width: 400px; margin: 0 auto; text-align: left;">
-                        <label>Pilih Siswa</label>
-                        <select style="margin-bottom: 15px;">
-                            <option>1. Ahmad Budi Santoso</option>
-                            <option>2. Siti Aminah</option>
-                        </select>
-                        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem;">📄 Generate PDF Rapor</button>
+            <div id="tab-walas" class="page-section">
+                <div class="card">
+                    <div class="filter-grid">
+                        <div><label>Pilih Kelas Binaan Anda</label><select id="wl_kelas"><option value="">- Pilih Kelas -</option></select></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="loadSiswaWalas()">🔍 Tampilkan Siswa</button>
+                            <button class="btn btn-success" onclick="downloadLegerKelas()">📊 Download Leger (Excel)</button>
+                        </div>
                     </div>
                 </div>
+
+                <form id="form-walas">
+                    <div class="table-responsive">
+                        <table id="tabel-walas" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Nama Siswa (NISN)</th>
+                                    <th>Sakit (Hari)</th>
+                                    <th>Izin (Hari)</th>
+                                    <th>Alpa (Hari)</th>
+                                    <th>Catatan Wali Kelas</th>
+                                    <th width="15%">Aksi (Cetak)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-walas"></tbody>
+                        </table>
+                    </div>
+                    <button type="submit" id="btn-simpan-wl" class="btn btn-success" style="display: none; padding: 15px; font-size: 1rem;">💾 Simpan Absensi & Catatan</button>
+                </form>
+            </div>
+
+            <div id="tab-p5" class="page-section">
+                <div class="card" style="border-top: 4px solid var(--danger);">
+                    <div class="filter-grid">
+                        <div><label>Pilih Proyek</label><select id="p5_proyek"><option value="">- Pilih Proyek P5 -</option></select></div>
+                        <div><label>Kelas</label><select id="p5_kelas" class="kelas-dropdown"><option value="">- Pilih Kelas -</option></select></div>
+                        <div><label>Dimensi Profil</label>
+                            <select id="p5_dimensi">
+                                <option value="">- Pilih Dimensi -</option>
+                                <option value="Beriman & Bertakwa">Beriman & Bertakwa</option>
+                                <option value="Berkebinekaan Global">Berkebinekaan Global</option>
+                                <option value="Bergotong Royong">Bergotong Royong</option>
+                                <option value="Mandiri">Mandiri</option>
+                                <option value="Bernalar Kritis">Bernalar Kritis</option>
+                                <option value="Kreatif">Kreatif</option>
+                            </select>
+                        </div>
+                        <div><button class="btn btn-danger" onclick="loadSiswaP5()">🔍 Tampilkan</button></div>
+                    </div>
+                </div>
+
+                <form id="form-p5">
+                    <div class="table-responsive">
+                        <table id="tabel-p5" style="display: none;">
+                            <thead><tr><th>Nama Siswa (NISN)</th><th>Capaian (BB/MB/BSH/SB)</th><th>Catatan Proses Observasi</th></tr></thead>
+                            <tbody id="tbody-p5"></tbody>
+                        </table>
+                    </div>
+                    <button type="submit" id="btn-simpan-p5" class="btn btn-danger" style="display: none; padding: 15px; font-size: 1rem;">💾 Simpan Nilai P5</button>
+                </form>
+            </div>
+
+            <div id="tab-ekskul" class="page-section">
+                <div class="card" style="border-top: 4px solid var(--warning);">
+                    <div class="filter-grid">
+                        <div><label>Pilih Ekstrakurikuler</label><select id="ek_nama"><option value="">- Memuat Ekskul... -</option></select></div>
+                        <div><label>Kelas</label><select id="ek_kelas" class="kelas-dropdown"><option value="">- Pilih Kelas -</option></select></div>
+                        <div><button class="btn btn-warning" onclick="loadSiswaEkskul()">🔍 Tampilkan</button></div>
+                    </div>
+                </div>
+
+                <form id="form-ekskul">
+                    <div class="table-responsive">
+                        <table id="tabel-ekskul" style="display: none;">
+                            <thead><tr><th>Nama Siswa (NISN)</th><th>Predikat Kemampuan</th><th>Deskripsi Keterampilan</th></tr></thead>
+                            <tbody id="tbody-ekskul"></tbody>
+                        </table>
+                    </div>
+                    <button type="submit" id="btn-simpan-ek" class="btn btn-warning" style="display: none; padding: 15px; font-size: 1rem;">💾 Simpan Nilai Ekstrakurikuler</button>
+                </form>
             </div>
 
         </div>
     </main>
 
     <script type="module">
-        // IMPORT DARI APP.JS (Asumsi file setup Supabase Anda)
         import { supabase, checkSession } from './app.js'
 
-        // 1. SISTEM NAVIGASI TAB
+        let guruId = null;
+        let userRoles = [];
+        let curAnggotaKelas = []; 
+
+        // 1. SISTEM NAVIGASI TAB (UI Baru)
         const navLinks = document.querySelectorAll('.nav-link');
         const pages = document.querySelectorAll('.page-section');
-        const topbarTitle = document.getElementById('topbar-title');
+        const topbarTitle = document.getElementById('page-title');
 
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -345,72 +290,282 @@
             });
         });
 
-        // 2. FUNGSI LOGOUT
+        // 2. LOGOUT
         document.getElementById('btn-logout').addEventListener('click', async () => {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar dari Portal Guru?");
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
             if(confirmLogout) {
                 await supabase.auth.signOut();
                 window.location.replace('index.html');
             }
         });
 
-        // 3. LOGIKA INTERAKSI UI SEDERHANA
-        document.getElementById('btn-tampilkan-nilai').addEventListener('click', () => {
-            const kelas = document.getElementById('filter-kelas-akademik').value;
-            const mapel = document.getElementById('filter-mapel-akademik').value;
-            
-            if(kelas && mapel) {
-                // Tampilkan tabel nilai dengan animasi halus
-                const tabelArea = document.getElementById('area-tabel-nilai');
-                tabelArea.style.display = 'block';
-                tabelArea.style.animation = 'fadeIn 0.5s ease';
-            } else {
-                alert('Silakan pilih Kelas dan Mata Pelajaran terlebih dahulu!');
+        // ==========================================
+        // INISIASI & LOAD MASTER DROPDOWN
+        // ==========================================
+        async function init() {
+            const session = await checkSession();
+            if (!session) return window.location.href = 'index.html';
+            guruId = session.user.id;
+
+            const { data: profile } = await supabase.from('profiles').select('full_name, roles, nip').eq('id', guruId).single();
+            if (profile) {
+                document.getElementById('user-info').textContent = `Halo, ${profile.full_name}`;
+                userRoles = profile.roles || [];
+                
+                document.getElementById('prof_nama').value = profile.full_name || '';
+                document.getElementById('prof_nip').value = profile.nip || '';
+                
+                // Tampilkan menu sidebar berdasarkan Role
+                if(userRoles.includes('admin') || userRoles.includes('guru')) document.getElementById('nav-guru').style.display = 'block';
+                if(userRoles.includes('admin') || userRoles.includes('wali_kelas')) document.getElementById('nav-walas').style.display = 'block';
+                if(userRoles.includes('admin') || userRoles.includes('koordinator_p5')) document.getElementById('nav-p5').style.display = 'block';
+                if(userRoles.includes('admin') || userRoles.includes('pembina_ekstra')) document.getElementById('nav-ekskul').style.display = 'block';
             }
+            loadMasterDropdowns();
+        }
+
+        document.getElementById('form-profil').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-simpan-profil'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            const namaBaru = document.getElementById('prof_nama').value; const nipBaru = document.getElementById('prof_nip').value;
+            const { error } = await supabase.from('profiles').update({ full_name: namaBaru, nip: nipBaru }).eq('id', guruId);
+            if (error) alert("Gagal menyimpan: " + error.message);
+            else { alert("✅ Profil berhasil diupdate!"); document.getElementById('user-info').textContent = `Halo, ${namaBaru}`; }
+            btn.textContent = '💾 Simpan Profil'; btn.disabled = false;
+        });
+
+        async function loadMasterDropdowns() {
+            // Dropdown Semua Kelas
+            const { data: kelasSemua } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
+            document.querySelectorAll('.kelas-dropdown').forEach(select => { 
+                if(select.id !== 'wl_kelas' && kelasSemua) {
+                    kelasSemua.forEach(k => select.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); 
+                }
+            });
+
+            // Dropdown Khusus Wali Kelas
+            if (userRoles.includes('wali_kelas') || userRoles.includes('admin')) {
+                let query = supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
+                if (!userRoles.includes('admin')) { query = query.eq('wali_kelas_id', guruId); }
+                const { data: kelasBinaan } = await query;
+                const selWalas = document.getElementById('wl_kelas');
+                if (kelasBinaan && kelasBinaan.length > 0) { kelasBinaan.forEach(k => selWalas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); } 
+                else { selWalas.innerHTML = '<option value="">(Belum ditugaskan di kelas manapun)</option>'; }
+            }
+
+            // Dropdown Mapel
+            if (userRoles.includes('guru') || userRoles.includes('admin')) {
+                const { data: mapel } = await supabase.from('mata_pelajaran').select('id, nama_mapel').order('nama_mapel');
+                const selMapel = document.getElementById('ak_mapel'); if(mapel) mapel.forEach(m => selMapel.innerHTML += `<option value="${m.id}">${m.nama_mapel}</option>`);
+            }
+            // Dropdown P5
+            if (userRoles.includes('koordinator_p5') || userRoles.includes('admin')) {
+                const { data: p5 } = await supabase.from('proyek_p5').select('id, nama_proyek, tema');
+                const selP5 = document.getElementById('p5_proyek'); if(p5) p5.forEach(p => selP5.innerHTML += `<option value="${p.id}">${p.nama_proyek} (${p.tema})</option>`);
+            }
+            // Dropdown Ekskul
+            if (userRoles.includes('pembina_ekstra') || userRoles.includes('admin')) {
+                const { data: eks } = await supabase.from('ekstrakurikuler').select('id, nama_ekskul');
+                const selEks = document.getElementById('ek_nama'); if(eks && eks.length > 0) eks.forEach(e => selEks.innerHTML += `<option value="${e.id}">${e.nama_ekskul}</option>`);
+            }
+        }
+
+        // ==========================================
+        // DOWNLOAD LEGER (WALI KELAS)
+        // ==========================================
+        window.downloadLegerKelas = async () => {
+            const kelasId = document.getElementById('wl_kelas').value;
+            if(!kelasId) return alert("⚠️ Silakan pilih Kelas Binaan Anda terlebih dahulu.");
+            const dropdown = document.getElementById('wl_kelas'); const kelasName = dropdown.options[dropdown.selectedIndex].text;
+            
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+            if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa di kelas ini.");
+            const anggotaIds = anggota.map(a => a.id);
+
+            const { data: pgm } = await supabase.from('pengampu_mapel').select('id, mata_pelajaran(nama_mapel)').eq('kelas_id', kelasId);
+            let mapelMap = {}; let mapelArray = []; 
+            if(pgm) { pgm.forEach(p => { mapelMap[p.id] = p.mata_pelajaran.nama_mapel; if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel); }); }
+            mapelArray.sort();
+
+            const { data: nilai } = await supabase.from('nilai_akademik').select('anggota_kelas_id, pengampu_mapel_id, nilai_akhir').in('anggota_kelas_id', anggotaIds);
+            const { data: absen } = await supabase.from('absensi_catatan').select('anggota_kelas_id, sakit, izin, tanpa_keterangan').in('anggota_kelas_id', anggotaIds);
+            let mapAbsen = {}; if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
+
+            let dataLeger = anggota.map(a => {
+                let rowData = { "NISN": a.siswa.nisn, "NAMA SISWA": a.siswa.nama_lengkap };
+                let totalNilai = 0; let jumlahMapelDiisi = 0;
+                mapelArray.forEach(m => { rowData[m] = ''; });
+
+                if (nilai) {
+                    let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id);
+                    nilaiAnak.forEach(n => {
+                        let namaMapel = mapelMap[n.pengampu_mapel_id]; let nilaiAkhir = n.nilai_akhir || 0;
+                        if (namaMapel) { rowData[namaMapel] = nilaiAkhir; totalNilai += parseFloat(nilaiAkhir); jumlahMapelDiisi++; }
+                    });
+                }
+                rowData["TOTAL NILAI"] = totalNilai; rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
+                let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 };
+                rowData["SAKIT"] = abs.sakit || 0; rowData["IZIN"] = abs.izin || 0; rowData["ALPA"] = abs.tanpa_keterangan || 0;
+                return rowData;
+            });
+
+            let csv = Papa.unparse(dataLeger); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; link.click();
+        };
+
+        // ==========================================
+        // NILAI AKADEMIK & AGAMA FILTERING
+        // ==========================================
+        window.loadSiswaAkademik = async () => {
+            const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value; const tbody = document.getElementById('tbody-akademik');
+            if(!mapelId || !kelasId) return alert("Pilih Mapel dan Kelas terlebih dahulu!");
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-akademik').style.display = 'table'; document.getElementById('btn-simpan-ak').style.display = 'none';
+            
+            let pengampuId = null; const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
+            if(pgm) pengampuId = pgm.id;
+            
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn, agama)`).eq('kelas_id', kelasId);
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa di kelas ini.</td></tr>';
+
+            // Filter Agama Cerdas
+            const selMapel = document.getElementById('ak_mapel');
+            const mapelName = selMapel.options[selMapel.selectedIndex].text.toLowerCase();
+            let filteredAnggota = anggota;
+            if (mapelName.includes('islam')) { filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'islam'); } 
+            else if (mapelName.includes('kristen')) { filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'kristen'); } 
+            else if (mapelName.includes('buddha')) { filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'buddha'); } 
+            else if (mapelName.includes('hindu')) { filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'hindu'); } 
+            else if (mapelName.includes('katolik')) { filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'katolik'); }
+            
+            if(filteredAnggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa dengan agama tersebut di kelas ini.</td></tr>';
+
+            let mapNilai = {}; if (pengampuId) { const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId); if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n); }
+            curAnggotaKelas = filteredAnggota; tbody.innerHTML = '';
+            
+            filteredAnggota.forEach(a => {
+                const n = mapNilai[a.id] || {};
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn} | ${a.siswa.agama || 'Islam'}</small></td><td><input type="number" id="ak_f_${a.id}" value="${n.nilai_formatif || ''}"></td><td><input type="number" id="ak_s_${a.id}" value="${n.nilai_sumatif || ''}"></td><td><input type="number" id="ak_sas_${a.id}" value="${n.nilai_sas || ''}"></td><td><input type="number" id="ak_na_${a.id}" value="${n.nilai_akhir || ''}"></td><td><textarea id="ak_desc_${a.id}">${n.deskripsi_capaian || ''}</textarea></td></tr>`;
+            });
+            document.getElementById('btn-simpan-ak').style.display = 'block'; document.getElementById('ak_csv_tools').style.display = 'flex';
+        };
+
+        document.getElementById('form-akademik').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-simpan-ak'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value;
+            let { data: pengampu } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
+            let pId = pengampu ? pengampu.id : (await supabase.from('pengampu_mapel').insert([{guru_id: guruId, mapel_id: mapelId, kelas_id: kelasId}]).select().single()).data.id;
+            for(let a of curAnggotaKelas) {
+                const f = document.getElementById(`ak_f_${a.id}`).value || 0; const s = document.getElementById(`ak_s_${a.id}`).value || 0; const sas = document.getElementById(`ak_sas_${a.id}`).value || 0; const na = document.getElementById(`ak_na_${a.id}`).value || 0; const desc = document.getElementById(`ak_desc_${a.id}`).value;
+                const { data: cek } = await supabase.from('nilai_akademik').select('id').eq('anggota_kelas_id', a.id).eq('pengampu_mapel_id', pId).single();
+                if(cek) await supabase.from('nilai_akademik').update({nilai_formatif: f, nilai_sumatif: s, nilai_sas: sas, nilai_akhir: na, deskripsi_capaian: desc}).eq('id', cek.id);
+                else await supabase.from('nilai_akademik').insert([{anggota_kelas_id: a.id, pengampu_mapel_id: pId, nilai_formatif: f, nilai_sumatif: s, nilai_sas: sas, nilai_akhir: na, deskripsi_capaian: desc}]);
+            }
+            alert("✅ Nilai Akademik berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai Akademik'; btn.disabled = false;
         });
 
         // ==========================================
-        // FUNGSI INISIASI & TARIK DATA PROFIL GURU
+        // TUGAS WALI KELAS
         // ==========================================
-        async function initGuruPortal() {
-            // Cek Login
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                alert("Anda belum login!");
-                window.location.replace('index.html');
-                return;
+        window.loadSiswaWalas = async () => {
+            const kelasId = document.getElementById('wl_kelas').value; const tbody = document.getElementById('tbody-walas');
+            if(!kelasId) return alert("Pilih Kelas!");
+            tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-walas').style.display = 'table'; document.getElementById('btn-simpan-wl').style.display = 'none';
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa.</td></tr>';
+            const { data: absenExisting } = await supabase.from('absensi_catatan').select('*').in('anggota_kelas_id', anggota.map(a=>a.id));
+            let mapAbsen = {}; if(absenExisting) absenExisting.forEach(n => mapAbsen[n.anggota_kelas_id] = n);
+            curAnggotaKelas = anggota; tbody.innerHTML = '';
+            anggota.forEach(a => {
+                const n = mapAbsen[a.id] || {};
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td><td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td><td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td><td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td><td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td><td><button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button><button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button></td></tr>`;
+            });
+            document.getElementById('btn-simpan-wl').style.display = 'block';
+        };
+
+        document.getElementById('form-walas').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-simpan-wl'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            for(let a of curAnggotaKelas) {
+                const s = document.getElementById(`wl_s_${a.id}`).value || 0; const i = document.getElementById(`wl_i_${a.id}`).value || 0; const alpa = document.getElementById(`wl_a_${a.id}`).value || 0; const c = document.getElementById(`wl_c_${a.id}`).value;
+                const { data: cek } = await supabase.from('absensi_catatan').select('id').eq('anggota_kelas_id', a.id).single();
+                if(cek) await supabase.from('absensi_catatan').update({sakit: s, izin: i, tanpa_keterangan: alpa, catatan_wali_kelas: c}).eq('id', cek.id);
+                else await supabase.from('absensi_catatan').insert([{anggota_kelas_id: a.id, sakit: s, izin: i, tanpa_keterangan: alpa, catatan_wali_kelas: c}]);
             }
+            alert("✅ Absensi & Catatan Wali Kelas berhasil disimpan!"); btn.textContent = '💾 Simpan Absensi & Catatan'; btn.disabled = false;
+        });
 
-            const userId = session.user.id;
+        // ==========================================
+        // PROYEK P5 & EKSKUL
+        // ==========================================
+        window.loadSiswaP5 = async () => {
+            const pId = document.getElementById('p5_proyek').value; const kId = document.getElementById('p5_kelas').value; const dim = document.getElementById('p5_dimensi').value; const tbody = document.getElementById('tbody-p5');
+            if(!pId || !kId || !dim) return alert("Pilih Proyek, Kelas, dan Dimensi!");
+            tbody.innerHTML = '<tr><td colspan="3">Memuat data...</td></tr>'; document.getElementById('tabel-p5').style.display = 'table'; document.getElementById('btn-simpan-p5').style.display = 'none';
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kId);
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="3" style="color:red">Tidak ada siswa.</td></tr>';
+            const { data: existing } = await supabase.from('nilai_p5').select('*').in('anggota_kelas_id', anggota.map(a=>a.id)).eq('proyek_id', pId).eq('dimensi', dim);
+            let mapP5 = {}; if(existing) existing.forEach(n => mapP5[n.anggota_kelas_id] = n);
+            curAnggotaKelas = anggota; tbody.innerHTML = '';
+            anggota.forEach(a => {
+                const n = mapP5[a.id] || {}; const val = n.capaian || '';
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b></td><td><select id="p5_c_${a.id}"><option value="">- Pilih Capaian -</option><option value="BB" ${val==='BB'?'selected':''}>BB</option><option value="MB" ${val==='MB'?'selected':''}>MB</option><option value="BSH" ${val==='BSH'?'selected':''}>BSH</option><option value="SB" ${val==='SB'?'selected':''}>SB</option></select></td><td><textarea id="p5_desc_${a.id}">${n.catatan || ''}</textarea></td></tr>`;
+            });
+            document.getElementById('btn-simpan-p5').style.display = 'block';
+        };
 
-            // Ambil Profil Guru dari Database
-            const { data: profile } = await supabase.from('profiles').select('full_name, roles').eq('id', userId).single();
-            
-            if (profile) {
-                // Tampilkan Nama di Topbar
-                document.getElementById('guru-nama').textContent = profile.full_name;
-                document.querySelector('.nama-sapaan').textContent = profile.full_name;
-                
-                // Format Role Badge (Misal: Guru Mapel, Wali Kelas)
-                let roleText = "Guru";
-                if(profile.roles && profile.roles.length > 0) {
-                    // Bersihkan teks role (ubah underscore jadi spasi, huruf kapital awal)
-                    roleText = profile.roles.map(r => r.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
-                }
-                document.getElementById('guru-role').textContent = roleText;
-
-                // LOGIKA CERDAS: Sembunyikan Menu Wali Kelas jika dia BUKAN wali kelas
-                if (!profile.roles.includes('wali_kelas')) {
-                    document.querySelectorAll('.walas-menu').forEach(el => el.style.display = 'none');
-                }
+        document.getElementById('form-p5').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-simpan-p5'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            const pId = document.getElementById('p5_proyek').value; const dim = document.getElementById('p5_dimensi').value;
+            for(let a of curAnggotaKelas) {
+                const c = document.getElementById(`p5_c_${a.id}`).value; const desc = document.getElementById(`p5_desc_${a.id}`).value;
+                if(!c) continue; 
+                const { data: cek } = await supabase.from('nilai_p5').select('id').eq('anggota_kelas_id', a.id).eq('proyek_id', pId).eq('dimensi', dim).single();
+                if(cek) await supabase.from('nilai_p5').update({capaian: c, catatan: desc}).eq('id', cek.id);
+                else await supabase.from('nilai_p5').insert([{anggota_kelas_id: a.id, proyek_id: pId, dimensi: dim, capaian: c, catatan: desc}]);
             }
+            alert("✅ Nilai P5 berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai P5'; btn.disabled = false;
+        });
 
-            // TODO: Tambahkan fungsi fetch list kelas yang diajar guru ini
-            // TODO: Tambahkan fungsi fetch list mapel guru ini
-        }
+        window.loadSiswaEkskul = async () => {
+            const eId = document.getElementById('ek_nama').value; const kId = document.getElementById('ek_kelas').value; const tbody = document.getElementById('tbody-ekskul');
+            if(!eId || !kId) return alert("Pilih Ekskul dan Kelas!");
+            tbody.innerHTML = '<tr><td colspan="3">Memuat data...</td></tr>'; document.getElementById('tabel-ekskul').style.display = 'table'; document.getElementById('btn-simpan-ek').style.display = 'none';
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kId);
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="3" style="color:red">Tidak ada siswa.</td></tr>';
+            const { data: existing } = await supabase.from('nilai_ekskul').select('*').in('anggota_kelas_id', anggota.map(a=>a.id)).eq('ekskul_id', eId);
+            let mapEks = {}; if(existing) existing.forEach(n => mapEks[n.anggota_kelas_id] = n);
+            curAnggotaKelas = anggota; tbody.innerHTML = '';
+            anggota.forEach(a => {
+                const n = mapEks[a.id] || {}; const val = n.predikat || '';
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b></td><td><select id="ek_p_${a.id}"><option value="">- Predikat -</option><option value="Sangat Baik" ${val==='Sangat Baik'?'selected':''}>Sangat Baik</option><option value="Baik" ${val==='Baik'?'selected':''}>Baik</option><option value="Cukup" ${val==='Cukup'?'selected':''}>Cukup</option><option value="Kurang" ${val==='Kurang'?'selected':''}>Kurang</option></select></td><td><textarea id="ek_desc_${a.id}">${n.deskripsi || ''}</textarea></td></tr>`;
+            });
+            document.getElementById('btn-simpan-ek').style.display = 'block';
+        };
 
-        // Jalankan saat halaman dibuka
-        initGuruPortal();
+        document.getElementById('form-ekskul').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-simpan-ek'); btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            const eId = document.getElementById('ek_nama').value;
+            for(let a of curAnggotaKelas) {
+                const p = document.getElementById(`ek_p_${a.id}`).value; const desc = document.getElementById(`ek_desc_${a.id}`).value;
+                if(!p && !desc) continue; 
+                const { data: cek } = await supabase.from('nilai_ekskul').select('id').eq('anggota_kelas_id', a.id).eq('ekskul_id', eId).single();
+                if(cek) await supabase.from('nilai_ekskul').update({predikat: p, deskripsi: desc}).eq('id', cek.id);
+                else await supabase.from('nilai_ekskul').insert([{anggota_kelas_id: a.id, ekskul_id: eId, predikat: p, deskripsi: desc}]);
+            }
+            alert("✅ Nilai Ekstrakurikuler berhasil disimpan!"); btn.textContent = '💾 Simpan Nilai Ekstrakurikuler'; btn.disabled = false;
+        });
+
+        // CSV TOOLS
+        document.getElementById('btn-download-csv').addEventListener('click', () => {
+            let dataLaporan = curAnggotaKelas.map(a => { return { "NISN": a.siswa.nisn, "NAMA_SISWA": a.siswa.nama_lengkap, "FORMATIF": document.getElementById(`ak_f_${a.id}`).value || '', "SUMATIF": document.getElementById(`ak_s_${a.id}`).value || '', "SAS": document.getElementById(`ak_sas_${a.id}`).value || '', "NILAI_AKHIR": document.getElementById(`ak_na_${a.id}`).value || '', "DESKRIPSI_CAPAIAN": document.getElementById(`ak_desc_${a.id}`).value || '' } });
+            let csv = Papa.unparse(dataLaporan); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Template_Nilai_Akademik.csv`; link.click();
+        });
+
+        document.getElementById('btn-upload-csv').addEventListener('click', () => {
+            const fileInput = document.getElementById('file-csv-nilai'); if (!fileInput.files.length) return alert("Pilih file CSV!");
+            Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: function(results) { let sukses = 0; results.data.forEach(row => { const anggota = curAnggotaKelas.find(a => a.siswa.nisn == row.NISN); if (anggota) { if(row.FORMATIF) document.getElementById(`ak_f_${anggota.id}`).value = row.FORMATIF; if(row.SUMATIF) document.getElementById(`ak_s_${anggota.id}`).value = row.SUMATIF; if(row.SAS) document.getElementById(`ak_sas_${anggota.id}`).value = row.SAS; if(row.NILAI_AKHIR) document.getElementById(`ak_na_${anggota.id}`).value = row.NILAI_AKHIR; if(row.DESKRIPSI_CAPAIAN) document.getElementById(`ak_desc_${anggota.id}`).value = row.DESKRIPSI_CAPAIAN; sukses++; } }); alert(`✅ Memuat ${sukses} data ke layar! Silakan periksa dan klik "Simpan Nilai Akademik".`); fileInput.value = ''; }});
+        });
+
+        init();
     </script>
 </body>
 </html>
