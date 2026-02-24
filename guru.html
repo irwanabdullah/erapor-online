@@ -350,19 +350,50 @@
         // ==========================================
         // SISA LOGIKA (NILAI, WALAS, P5, EKSKUL)
         // ==========================================
+       // ==========================================
+        // SISA LOGIKA (NILAI, WALAS, P5, EKSKUL)
+        // ==========================================
         window.loadSiswaAkademik = async () => {
             const mapelId = document.getElementById('ak_mapel').value; const kelasId = document.getElementById('ak_kelas').value; const tbody = document.getElementById('tbody-akademik');
             if(!mapelId || !kelasId) return alert("Pilih Mapel dan Kelas terlebih dahulu!");
             tbody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>'; document.getElementById('tabel-akademik').style.display = 'table'; document.getElementById('btn-simpan-ak').style.display = 'none';
+            
+            // Dapatkan ID Pengampu
             let pengampuId = null; const { data: pgm } = await supabase.from('pengampu_mapel').select('id').eq('guru_id', guruId).eq('mapel_id', mapelId).eq('kelas_id', kelasId).single();
             if(pgm) pengampuId = pgm.id;
-            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
+            
+            // Ambil data siswa BESERTA agamanya
+            const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn, agama)`).eq('kelas_id', kelasId);
             if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa di kelas ini.</td></tr>';
+
+            // --- FILTER AGAMA CERDAS ---
+            const selMapel = document.getElementById('ak_mapel');
+            const mapelName = selMapel.options[selMapel.selectedIndex].text.toLowerCase();
+            
+            let filteredAnggota = anggota;
+            if (mapelName.includes('islam')) {
+                filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'islam');
+            } else if (mapelName.includes('kristen')) {
+                filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'kristen');
+            } else if (mapelName.includes('buddha')) {
+                filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'buddha');
+            } else if (mapelName.includes('hindu')) {
+                filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'hindu');
+            } else if (mapelName.includes('katolik')) {
+                filteredAnggota = anggota.filter(a => a.siswa.agama && a.siswa.agama.toLowerCase() === 'katolik');
+            }
+            
+            // Jika setelah difilter kosong (misal guru agama Buddha buka kelas yang gak ada anak Buddhanya)
+            if(filteredAnggota.length === 0) return tbody.innerHTML = '<tr><td colspan="6" style="color:red">Tidak ada siswa dengan agama tersebut di kelas ini.</td></tr>';
+
             let mapNilai = {}; if (pengampuId) { const { data: nilaiExisting } = await supabase.from('nilai_akademik').select('*').eq('pengampu_mapel_id', pengampuId); if(nilaiExisting) nilaiExisting.forEach(n => mapNilai[n.anggota_kelas_id] = n); }
-            curAnggotaKelas = anggota; tbody.innerHTML = '';
-            anggota.forEach(a => {
+            
+            curAnggotaKelas = filteredAnggota; // Set global state hanya untuk siswa yang tampil
+            tbody.innerHTML = '';
+            
+            filteredAnggota.forEach(a => {
                 const n = mapNilai[a.id] || {};
-                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td><td><input type="number" id="ak_f_${a.id}" value="${n.nilai_formatif || ''}"></td><td><input type="number" id="ak_s_${a.id}" value="${n.nilai_sumatif || ''}"></td><td><input type="number" id="ak_sas_${a.id}" value="${n.nilai_sas || ''}"></td><td><input type="number" id="ak_na_${a.id}" value="${n.nilai_akhir || ''}"></td><td><textarea id="ak_desc_${a.id}">${n.deskripsi_capaian || ''}</textarea></td></tr>`;
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn} | ${a.siswa.agama || 'Islam'}</small></td><td><input type="number" id="ak_f_${a.id}" value="${n.nilai_formatif || ''}"></td><td><input type="number" id="ak_s_${a.id}" value="${n.nilai_sumatif || ''}"></td><td><input type="number" id="ak_sas_${a.id}" value="${n.nilai_sas || ''}"></td><td><input type="number" id="ak_na_${a.id}" value="${n.nilai_akhir || ''}"></td><td><textarea id="ak_desc_${a.id}">${n.deskripsi_capaian || ''}</textarea></td></tr>`;
             });
             document.getElementById('btn-simpan-ak').style.display = 'block'; document.getElementById('ak_csv_tools').style.display = 'block';
         };
@@ -480,3 +511,4 @@
     </script>
 </body>
 </html>
+
