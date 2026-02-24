@@ -19,7 +19,7 @@
         
         .proyek-title { font-weight: bold; margin-top: 20px; background-color: #e2e8f0; padding: 5px 10px; border: 1px solid #000; border-bottom: none; }
         
-        /* Tanda Tangan */
+        /* Box Tanda Tangan */
         .ttd-box { width: 100%; margin-top: 30px; text-align: center; page-break-inside: avoid; }
         .ttd-box td { width: 33%; vertical-align: top; padding-top: 10px; }
         .ttd-space { height: 70px; }
@@ -31,7 +31,7 @@
     <button class="no-print" onclick="window.print()" style="padding: 10px 20px; font-size: 14px; margin-bottom: 20px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ Cetak Rapor P5</button>
 
     <div class="header">
-        <h2>RAPOR KOKURIKULER</h2>
+        <h2>RAPOR PROJEK PENGUATAN PROFIL PELAJAR PANCASILA</h2>
     </div>
 
     <table class="identitas">
@@ -44,8 +44,8 @@
             <td>Fase</td><td>:</td><td>D</td>
         </tr>
         <tr>
-            <td>Nama Sekolah</td><td>:</td><td><b>UPT SPF SMP NEGERI 13 MAKASSAR</b></td>
-            <td>Tahun Pelajaran</td><td>:</td><td>2025/2026</td>
+            <td>Nama Sekolah</td><td>:</td><td><b>[NAMA SEKOLAH ANDA]</b></td>
+            <td>Tahun Pelajaran</td><td>:</td><td>[TAHUN PELAJARAN]</td>
         </tr>
     </table>
 
@@ -57,17 +57,17 @@
         <tr>
             <td>Mengetahui,<br>Orang Tua/Wali<div class="ttd-space"></div><b>( ......................................... )</b></td>
             <td></td>
-            <td>Makassar, <span id="tgl_cetak">20 Desember 2024</span><br>Wali Kelas<div class="ttd-space"></div><b>( ......................................... )</b><br>NIP. .........................</td>
+            <td>Makassar, <span id="tgl_cetak">...</span><br>Wali Kelas<div class="ttd-space"></div><b><u id="nama_walas">Memuat...</u></b><br>NIP. <span id="nip_walas">...</span></td>
         </tr>
         <tr>
             <td></td>
-            <td style="padding-top: 20px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>( ......................................... )</u></b><br>NIP. .........................</td>
+            <td style="padding-top: 20px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>Drs. Ramli, M.Pd</u></b><br>NIP. 19800101 200501 1 002</td>
             <td></td>
         </tr>
     </table>
 
     <script type="module">
-        import { supabase } from './app.js'
+        import { supabase, checkSession } from './app.js'
 
         async function loadRaporP5() {
             const params = new URLSearchParams(window.location.search); const id = params.get('id');
@@ -81,10 +81,19 @@
                 document.getElementById('kelas').textContent = agt.kelas.nama_kelas;
             }
 
-            // Set Tanggal
             document.getElementById('tgl_cetak').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
-            // 2. Data Proyek & Nilai
+            // 2. MENDAPATKAN NAMA & NIP WALI KELAS OTOMATIS
+            const session = await checkSession();
+            if (session) {
+                const { data: profile } = await supabase.from('profiles').select('full_name, nip').eq('id', session.user.id).single();
+                if (profile) {
+                    document.getElementById('nama_walas').textContent = profile.full_name;
+                    document.getElementById('nip_walas').textContent = profile.nip ? profile.nip : '-';
+                }
+            }
+
+            // 3. Data Proyek & Nilai
             const {data: p5} = await supabase.from('nilai_p5').select('dimensi, capaian, catatan, proyek_p5(nama_proyek, tema)').eq('anggota_kelas_id', id);
             const container = document.getElementById('p5-container');
             
@@ -96,8 +105,7 @@
                     grouped[pName].items.push(n);
                 });
 
-                container.innerHTML = '';
-                let proyekCount = 1;
+                container.innerHTML = ''; let proyekCount = 1;
                 
                 for(let pName in grouped) {
                     let html = `<div class="proyek-title">Projek ${proyekCount} | ${pName}</div>
@@ -105,32 +113,14 @@
                         Tema: ${grouped[pName].tema}. (Deskripsi proyek dicantumkan di sini oleh Koordinator).
                     </div>
                     <table class="tabel-p5">
-                        <thead>
-                            <tr>
-                                <th width="30%">Dimensi Profil Pancasila</th>
-                                <th width="10%">Belum Berkembang (BB)</th>
-                                <th width="10%">Mulai Berkembang (MB)</th>
-                                <th width="10%">Berkembang Sesuai Harapan (BSH)</th>
-                                <th width="10%">Sangat Berkembang (SB)</th>
-                                <th width="30%">Catatan Proses</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th width="30%">Dimensi Profil Pancasila</th><th width="10%">Belum Berkembang (BB)</th><th width="10%">Mulai Berkembang (MB)</th><th width="10%">Berkembang Sesuai Harapan (BSH)</th><th width="10%">Sangat Berkembang (SB)</th><th width="30%">Catatan Proses</th></tr></thead>
                         <tbody>`;
                     
                     grouped[pName].items.forEach(item => {
-                        html += `<tr>
-                            <td>${item.dimensi}</td>
-                            <td class="text-center check-mark">${item.capaian === 'BB' ? '√' : ''}</td>
-                            <td class="text-center check-mark">${item.capaian === 'MB' ? '√' : ''}</td>
-                            <td class="text-center check-mark">${item.capaian === 'BSH' ? '√' : ''}</td>
-                            <td class="text-center check-mark">${item.capaian === 'SB' ? '√' : ''}</td>
-                            <td style="font-size: 10pt;">${item.catatan}</td>
-                        </tr>`;
+                        html += `<tr><td>${item.dimensi}</td><td class="text-center check-mark">${item.capaian === 'BB' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'MB' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'BSH' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'SB' ? '√' : ''}</td><td style="font-size: 10pt;">${item.catatan}</td></tr>`;
                     });
                     
-                    html += `</tbody></table>`;
-                    container.innerHTML += html;
-                    proyekCount++;
+                    html += `</tbody></table>`; container.innerHTML += html; proyekCount++;
                 }
             } else {
                 container.innerHTML = '<p class="text-center" style="color:red; border: 1px dashed red; padding: 20px;">Belum ada nilai Proyek P5 yang diinputkan untuk siswa ini.</p>';
@@ -140,4 +130,3 @@
     </script>
 </body>
 </html>
-
