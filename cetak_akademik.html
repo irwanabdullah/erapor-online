@@ -115,7 +115,7 @@
 
     <div class="footer-print">
         <span id="footer-kiri">Kelas ... | Nama Siswa ... | NIS ...</span>
-        <span>Dokumen e-Rapor</span>
+        <span style="font-weight: bold;">- Halaman : <span class="page-number"></span></span>
     </div>
 
     <script type="module">
@@ -171,6 +171,14 @@
             setTimeout(() => window.print(), 1000);
         }
         loadRapor();
+
+        /* Penghitung Halaman CSS */
+        body { counter-reset: halaman; }
+        .page-number::after { 
+            counter-increment: halaman; 
+            content: counter(halaman); 
+        }
     </script>
 </body>
 </html>
+
