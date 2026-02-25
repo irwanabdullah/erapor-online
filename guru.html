@@ -477,7 +477,7 @@
             curAnggotaKelas = anggota; tbody.innerHTML = '';
             anggota.forEach(a => {
                 const n = mapAbsen[a.id] || {};
-                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td><td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td><td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td><td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td><td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td><td><button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button><button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button><button onclick="window.open('cetak_sampul.html?id=${a.id}', '_blank')">📄 Cetak Sampul</button></td></tr>`;
+                tbody.innerHTML += `<tr><td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b><br><small>${a.siswa.nisn}</small></td><td><input type="number" id="wl_s_${a.id}" value="${n.sakit || 0}"></td><td><input type="number" id="wl_i_${a.id}" value="${n.izin || 0}"></td><td><input type="number" id="wl_a_${a.id}" value="${n.tanpa_keterangan || 0}"></td><td><textarea id="wl_c_${a.id}" placeholder="Pertahankan prestasimu...">${n.catatan_wali_kelas || ''}</textarea></td><td><button type="button" class="btn btn-primary" style="padding: 6px; font-size: 0.8rem; margin-bottom: 5px;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button><button type="button" class="btn btn-danger" style="padding: 6px; font-size: 0.8rem;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 Rapor P5</button></td><td><button onclick="window.open('cetak_sampul.html?id=${a.id}', '_blank')">📄 Cetak Sampul</button></td></tr>`;
             });
             document.getElementById('btn-simpan-wl').style.display = 'block';
         };
@@ -569,4 +569,5 @@
     </script>
 </body>
 </html>
+
 
