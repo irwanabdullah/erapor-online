@@ -5,53 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Rapor Akademik</title>
     <style>
-        @page { size: A4; margin: 15mm 20mm 25mm 20mm; } /* Margin bawah dilebarkan untuk footer */
+        @page { size: A4; margin: 15mm 20mm 25mm 20mm; } 
         body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; background: #fff; line-height: 1.4; margin: 0; }
         
         .header { text-align: center; font-weight: bold; margin-bottom: 20px; }
         .header h2 { margin: 0; font-size: 14pt; }
+        
         .identitas { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
         .identitas td { padding: 2px 5px; vertical-align: top; }
+        
         table.tabel-utama { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         table.tabel-utama th, table.tabel-utama td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; }
         table.tabel-utama th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
+        
         .text-center { text-align: center; }
-        .box-catatan { border: 1px solid #000; padding: 10px; min-height: 60px; margin-bottom: 20px; }
+        .box-catatan { border: 1px solid #000; padding: 10px; min-height: 60px; margin-bottom: 15px; }
+        
+        /* --- KOTAK BARU UNTUK KEPUTUSAN KENAIKAN KELAS --- */
+        .box-keputusan { border: 2px solid #000; padding: 15px; margin-bottom: 20px; text-align: center; }
+        .box-keputusan p { margin: 10px 0 0 0; font-size: 14pt; font-weight: bold; }
+        
         .tabel-absen { width: 50%; border-collapse: collapse; margin-bottom: 20px; }
         .tabel-absen td { border: 1px solid #000; padding: 4px 8px; }
+        
         .ttd-box { width: 100%; margin-top: 20px; text-align: center; page-break-inside: avoid; }
         .ttd-box td { width: 33%; vertical-align: top; padding-top: 10px; }
         .ttd-space { height: 70px; }
 
         /* --- MAGIC FOOTER PRINT --- */
         .footer-print {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            font-size: 10pt;
-            display: flex;
-            justify-content: space-between;
-            background: #fff;
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            border-top: 1px solid #000; padding-top: 5px; font-size: 10pt;
+            display: flex; justify-content: space-between; background: #fff;
         }
 
         @media screen { 
             .no-print { display: block; } 
-            .footer-print { display: none; } /* Sembunyikan di layar, hanya muncul saat print */
+            .footer-print { display: none; } 
         }
         @media print { 
             .no-print { display: none; } 
             .footer-print { display: flex; }
         }
-        /* Penghitung Halaman CSS */
-        body { counter-reset: halaman; }
-        .page-number::after { 
-            counter-increment: halaman; 
-            content: counter(halaman); 
-        }
         
+        body { counter-reset: halaman; }
+        .page-number::after { counter-increment: halaman; content: counter(halaman); }
     </style>
 </head>
 <body>
@@ -72,11 +70,11 @@
         </tr>
         <tr>
             <td>Nama Sekolah</td><td>:</td><td><b>UPT SPF SMP NEGERI 13 MAKASSAR</b></td>
-            <td>Semester</td><td>:</td><td>Ganjil</td>
+            <td>Semester</td><td>:</td><td id="semester-text">Ganjil</td>
         </tr>
         <tr>
             <td>Alamat</td><td>:</td><td>Jl. Tamalate VI No. 2 Perumnas-Makassar</td>
-            <td>Tahun Pelajaran</td><td>:</td><td>2025/2026</td>
+            <td>Tahun Pelajaran</td><td>:</td><td>2024/2025</td>
         </tr>
     </table>
 
@@ -107,6 +105,12 @@
         <div id="catatan" style="margin-top: 5px; font-style: italic;">-</div>
     </div>
 
+    <div class="box-keputusan" id="box-keputusan" style="display: none;">
+        <b>Keterangan Keputusan:</b><br>
+        Berdasarkan pencapaian seluruh kompetensi pada semester ganjil dan genap, peserta didik ditetapkan:<br>
+        <p id="teks-keputusan">NAIK KE KELAS ...</p>
+    </div>
+
     <table class="ttd-box">
         <tr>
             <td>Mengetahui,<br>Orang Tua/Wali<div class="ttd-space"></div><b>( ......................................... )</b></td>
@@ -115,7 +119,7 @@
         </tr>
         <tr>
             <td></td>
-            <td style="padding-top: 30px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>Drs. Ramli., M.Pd.</u></b><br>NIP. 19800101 200501 1 002</td>
+            <td style="padding-top: 30px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>Drs. Ramli., M.Pd.</u></b><br>NIP. 196611091996021002</td>
             <td></td>
         </tr>
     </table>
@@ -132,14 +136,35 @@
             const params = new URLSearchParams(window.location.search); const id = params.get('id');
             if(!id) return;
 
-            const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn), kelas(nama_kelas)').eq('id', id).single();
+            // MENGAMBIL DATA SISWA (Termasuk status_akademik yang baru dibuat)
+            const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn, status_akademik), kelas(nama_kelas)').eq('id', id).single();
             if(agt) {
                 document.getElementById('nama_siswa').textContent = agt.siswa.nama_lengkap;
                 document.getElementById('nisn').textContent = '- / ' + agt.siswa.nisn;
                 document.getElementById('kelas').textContent = agt.kelas.nama_kelas;
-                
-                // MENGISI DATA KE FOOTER OTOMATIS
                 document.getElementById('footer-kiri').textContent = `Kelas ${agt.kelas.nama_kelas} | ${agt.siswa.nama_lengkap} | ${agt.siswa.nisn}`;
+
+                // --- LOGIKA KENAIKAN KELAS DAN SEMESTER ---
+                const status = agt.siswa.status_akademik;
+                
+                // Jika statusnya ada dan BUKAN "Aktif" (artinya sudah diproses tombol Kenaikan Kelas)
+                if(status && status !== 'Aktif') {
+                    // Tampilkan kotak keputusan
+                    document.getElementById('box-keputusan').style.display = 'block';
+                    
+                    // Ubah teks semester menjadi Genap secara otomatis
+                    document.getElementById('semester-text').textContent = 'Genap';
+                    
+                    // Format teks keputusan (LULUS atau NAIK KELAS)
+                    if(status.toLowerCase().includes('lulus')) {
+                        document.getElementById('teks-keputusan').textContent = 'LULUS DARI SATUAN PENDIDIKAN (SMP)';
+                    } else {
+                        document.getElementById('teks-keputusan').textContent = status.toUpperCase(); 
+                    }
+                } else {
+                    // Jika masih "Aktif", biarkan Semester Ganjil dan kotak keputusan tetap tersembunyi
+                    document.getElementById('semester-text').textContent = 'Ganjil';
+                }
             }
 
             const {data: nilai} = await supabase.from('nilai_akademik').select('nilai_akhir, deskripsi_capaian, pengampu_mapel(mata_pelajaran(nama_mapel))').eq('anggota_kelas_id', id);
@@ -157,9 +182,9 @@
 
             const {data: absen} = await supabase.from('absensi_catatan').select('*').eq('anggota_kelas_id', id).single();
             if(absen) {
-                document.getElementById('sakit').textContent = absen.sakit + ' hari';
-                document.getElementById('izin').textContent = absen.izin + ' hari';
-                document.getElementById('alpa').textContent = absen.tanpa_keterangan + ' hari';
+                document.getElementById('sakit').textContent = (absen.sakit || 0) + ' hari';
+                document.getElementById('izin').textContent = (absen.izin || 0) + ' hari';
+                document.getElementById('alpa').textContent = (absen.tanpa_keterangan || 0) + ' hari';
                 document.getElementById('catatan').textContent = absen.catatan_wali_kelas || '-';
             }
             
@@ -174,13 +199,11 @@
                 }
             }
             
-            // Trigger dialog print otomatis
+            // Trigger dialog print otomatis setelah 1 detik
             setTimeout(() => window.print(), 1000);
         }
+        
         loadRapor();
-    
     </script>
 </body>
 </html>
-
-
