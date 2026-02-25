@@ -8,111 +8,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --sidebar-bg: #1e3a8a;
-            --sidebar-hover: #3b82f6;
-            --bg-color: #f3f4f6;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --white: #ffffff;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
+            --primary: #2563eb; --primary-dark: #1d4ed8; --sidebar-bg: #1e3a8a; --sidebar-hover: #3b82f6;
+            --bg-color: #f3f4f6; --text-main: #1f2937; --text-muted: #6b7280; --border-color: #e5e7eb;
+            --white: #ffffff; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
         }
-
-        body {
-            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color); color: var(--text-main);
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px; background-color: var(--sidebar-bg); color: var(--white);
-            display: flex; flex-direction: column; flex-shrink: 0;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1); z-index: 10;
-        }
-        .sidebar-header {
-            padding: 24px; font-size: 1.25rem; font-weight: 700;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; gap: 10px;
-        }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--white); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 10px rgba(0,0,0,0.1); z-index: 10; }
+        .sidebar-header { padding: 24px; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
         .sidebar-menu { list-style: none; padding: 15px 0; margin: 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li { padding: 0 15px; margin-bottom: 8px; }
-        .nav-link {
-            display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.8);
-            text-decoration: none; padding: 12px 16px; border-radius: 8px;
-            font-weight: 500; transition: all 0.2s ease; cursor: pointer;
-        }
+        .nav-link { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.8); text-decoration: none; padding: 12px 16px; border-radius: 8px; font-weight: 500; transition: all 0.2s ease; cursor: pointer; }
         .nav-link:hover, .nav-link.active { background-color: var(--sidebar-hover); color: var(--white); }
-        .logout-btn {
-            margin: 20px; padding: 12px; background-color: var(--danger); color: white;
-            border: none; border-radius: 8px; cursor: pointer; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        .logout-btn { margin: 20px; padding: 12px; background-color: var(--danger); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .logout-btn:hover { background-color: #dc2626; }
-
-        /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .topbar {
-            background: var(--white); padding: 20px 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
-        }
+        .topbar { background: var(--white); padding: 20px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         .topbar h2 { margin: 0; font-size: 1.2rem; font-weight: 600; }
         .content-area { flex: 1; padding: 30px; overflow-y: auto; }
-
-        /* --- TABS SYSTEM --- */
         .page-section { display: none; animation: fadeIn 0.3s ease-in-out; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- GRID & CARD --- */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .card {
-            background: var(--white); border-radius: 12px; padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px;
-        }
+        .card { background: var(--white); border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px; }
         .card-header { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
         .card-header h3 { margin: 0; font-size: 1.1rem; color: var(--primary-dark); }
-
-        /* --- FORM --- */
         label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; margin-top: 12px;}
-        input, select {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
-            border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
-            background: #f9fafb; transition: 0.2s; box-sizing: border-box;
-        }
+        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif; background: #f9fafb; transition: 0.2s; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); background: #fff;}
-        
-        .btn {
-            padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer;
-            font-weight: 600; font-size: 0.9rem; transition: 0.2s; font-family: 'Inter', sans-serif; width: 100%; margin-top: 15px;
-        }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; font-family: 'Inter', sans-serif; width: 100%; margin-top: 15px; }
         .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: var(--primary); color: #fff; }
-        .btn-success { background-color: var(--success); color: #fff; }
-        .btn-danger { background-color: var(--danger); color: #fff; }
-        .btn-dark { background-color: var(--text-main); color: #fff; }
-        .btn-warning { background-color: var(--warning); color: #000; }
-
-        /* --- CHECKBOX BOX (Untuk Plotting) --- */
+        .btn-primary { background-color: var(--primary); color: #fff; } .btn-success { background-color: var(--success); color: #fff; } .btn-danger { background-color: var(--danger); color: #fff; } .btn-dark { background-color: var(--text-main); color: #fff; } .btn-warning { background-color: var(--warning); color: #000; }
         .checkbox-box { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; max-height: 250px; overflow-y: auto; margin-top: 5px; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; padding: 6px; cursor: pointer; border-radius: 4px; margin: 0;}
-        .checkbox-item:hover { background-color: #e5e7eb; }
-        .checkbox-item input { width: auto; margin: 0; transform: scale(1.2); cursor: pointer; }
-
-        /* --- TABEL CETAK ADMIN --- */
+        .checkbox-item:hover { background-color: #e5e7eb; } .checkbox-item input { width: auto; margin: 0; transform: scale(1.2); cursor: pointer; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 15px; }
         th, td { padding: 10px; border: 1px solid var(--border-color); }
         th { background-color: #f8fafc; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
-
     <aside class="sidebar">
         <div class="sidebar-header">🏫 Admin Rapor</div>
         <ul class="sidebar-menu">
@@ -139,12 +74,12 @@
                 <div class="card" style="max-width: 700px;">
                     <div class="card-header"><h3>Selamat Datang di Panel Admin e-Rapor</h3></div>
                     <p style="color: var(--text-muted); line-height: 1.6;">
-                        Ini adalah pusat kendali aplikasi e-Rapor sekolah Anda. Silakan kelola data sekolah dengan urutan yang disarankan agar sistem berjalan lancar:<br><br>
+                        Ini adalah pusat kendali aplikasi e-Rapor sekolah Anda.<br><br>
                         <b>1. Hak Akses</b> (Atur siapa Wali Kelas, Guru Mapel, Koordinator P5).<br>
                         <b>2. Master Data Utama</b> (Buat Tahun Ajaran, Daftar Kelas, Mapel, dan Ekskul).<br>
                         <b>3. Kelola Siswa</b> (Import data anak-anak menggunakan Excel/CSV).<br>
-                        <b>4. Plotting Kelas</b> (Masukkan anak-anak ke dalam kelasnya masing-masing).<br>
-                        <b>5. Cetak Rapor</b> (Menu baru: Cetak rapor & unduh leger semua kelas).
+                        <b>4. Plotting Kelas</b> (Masukkan anak-anak ke dalam kelasnya).<br>
+                        <b>5. Cetak Rapor</b> (Menu cetak rapor & unduh leger semua kelas).
                     </p>
                 </div>
             </div>
@@ -152,7 +87,6 @@
             <div id="page-role" class="page-section">
                 <div class="card" style="max-width: 600px;">
                     <div class="card-header"><h3>👥 Berikan Hak Akses Pengguna</h3></div>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top:0;">Pilih akun guru, lalu centang jabatan yang akan diberikan. Satu guru bisa memiliki lebih dari satu jabatan (Multi-Role).</p>
                     <form id="form-role">
                         <label>Pilih Akun Guru/Staf</label>
                         <select id="select-user" required><option value="">Memuat data...</option></select>
@@ -175,29 +109,21 @@
                         <div class="card-header"><h3>✍️ Tambah Siswa (Manual)</h3></div>
                         <form id="form-siswa">
                             <div style="display: flex; gap: 10px;">
-                                <div style="flex: 2;"><label>NISN</label><input type="text" id="nisn" placeholder="0011223344" required></div>
+                                <div style="flex: 2;"><label>NISN</label><input type="text" id="nisn" required></div>
                                 <div style="flex: 1;"><label>L/P</label><select id="jk_siswa" required><option value="L">L</option><option value="P">P</option></select></div>
                                 <div style="flex: 1.5;">
                                     <label>Agama</label>
-                                    <select id="agama_siswa" required>
-                                        <option value="Islam">Islam</option>
-                                        <option value="Kristen">Kristen</option>
-                                        <option value="Katolik">Katolik</option>
-                                        <option value="Hindu">Hindu</option>
-                                        <option value="Buddha">Buddha</option>
-                                        <option value="Konghucu">Konghucu</option>
-                                    </select>
+                                    <select id="agama_siswa" required><option value="Islam">Islam</option><option value="Kristen">Kristen</option><option value="Katolik">Katolik</option><option value="Hindu">Hindu</option><option value="Buddha">Buddha</option><option value="Konghucu">Konghucu</option></select>
                                 </div>
                             </div>
-                            <label>Nama Lengkap Siswa</label>
-                            <input type="text" id="nama_siswa" placeholder="Cth: Budi Santoso" required>
+                            <label>Nama Lengkap Siswa</label><input type="text" id="nama_siswa" required>
                             <button type="submit" class="btn btn-primary">➕ Simpan Siswa</button>
                         </form>
                     </div>
 
                     <div class="card" style="background: #f0fdf4; border: 1px dashed #10b981;">
                         <div class="card-header"><h3 style="color: #047857;">🚀 Import Siswa (Massal Excel/CSV)</h3></div>
-                        <p style="font-size: 0.85rem; color: #047857; margin-top: 0;">Buat 5 kolom di Excel (baris pertama harus persis seperti ini):<br><b>nisn, nama, jk, agama, kelas</b></p>
+                        <p style="font-size: 0.85rem; color: #047857; margin-top: 0;">Buat 5 kolom di Excel: <b>nisn, nama, jk, agama, kelas</b></p>
                         <input type="file" id="file-csv" accept=".csv" style="background: #fff; margin-bottom: 10px;">
                         <button id="btn-import-csv" class="btn btn-success">⬆ Mulai Import Ribuan Siswa</button>
                         <p id="status-import" style="font-size: 0.85rem; font-weight: bold; margin-top: 15px;"></p>
@@ -207,44 +133,10 @@
 
             <div id="page-master" class="page-section">
                 <div class="grid-3">
-                    
-                    <div class="card">
-                        <div class="card-header"><h3>🗓 Tahun Ajaran</h3></div>
-                        <form id="form-tapel">
-                            <label>Tahun Ajaran</label><input type="text" id="nama_tapel" placeholder="Cth: 2024/2025" required>
-                            <label>Semester</label><select id="smt_tapel" required><option value="1">Ganjil (1)</option><option value="2">Genap (2)</option></select>
-                            <button type="submit" class="btn btn-dark">Simpan Tahun</button>
-                        </form>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header"><h3>🚪 Data Kelas & Wali Kelas</h3></div>
-                        <form id="form-kelas">
-                            <label>Nama Kelas</label><input type="text" id="nama_kelas" placeholder="Cth: VII-A" required>
-                            <label>Tingkat (Angka)</label><select id="tingkat_kelas" required><option value="7">Tingkat 7</option><option value="8">Tingkat 8</option><option value="9">Tingkat 9</option></select>
-                            <label>Wali Kelas (Opsional)</label><select id="walas_id"><option value="">- Pilih Wali Kelas -</option></select>
-                            <button type="submit" class="btn btn-dark">Simpan Kelas</button>
-                        </form>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header"><h3>📚 Mata Pelajaran</h3></div>
-                        <form id="form-mapel">
-                            <label>Kode Mapel</label><input type="text" id="kode_mapel" placeholder="Cth: MTK" required>
-                            <label>Nama Lengkap Mapel</label><input type="text" id="nama_mapel" placeholder="Cth: Matematika" required>
-                            <button type="submit" class="btn btn-dark">Simpan Mapel</button>
-                        </form>
-                    </div>
-
-                    <div class="card" style="border-top: 3px solid var(--warning);">
-                        <div class="card-header"><h3 style="color: #b45309;">⚽ Ekstrakurikuler</h3></div>
-                        <form id="form-ekskul">
-                            <label>Nama Ekstrakurikuler</label><input type="text" id="nama_ekskul" placeholder="Cth: Pramuka" required>
-                            <label>Pembina Ekskul (Guru)</label><select id="pembina_id" required><option value="">- Memuat... -</option></select>
-                            <button type="submit" class="btn btn-warning">Simpan Ekstrakurikuler</button>
-                        </form>
-                    </div>
-
+                    <div class="card"><div class="card-header"><h3>🗓 Tahun Ajaran</h3></div><form id="form-tapel"><label>Tahun Ajaran</label><input type="text" id="nama_tapel" required><label>Semester</label><select id="smt_tapel" required><option value="1">Ganjil (1)</option><option value="2">Genap (2)</option></select><button type="submit" class="btn btn-dark">Simpan Tahun</button></form></div>
+                    <div class="card"><div class="card-header"><h3>🚪 Data Kelas & Wali Kelas</h3></div><form id="form-kelas"><label>Nama Kelas</label><input type="text" id="nama_kelas" required><label>Tingkat (Angka)</label><select id="tingkat_kelas" required><option value="7">Tingkat 7</option><option value="8">Tingkat 8</option><option value="9">Tingkat 9</option></select><label>Wali Kelas (Opsional)</label><select id="walas_id"><option value="">- Pilih Wali Kelas -</option></select><button type="submit" class="btn btn-dark">Simpan Kelas</button></form></div>
+                    <div class="card"><div class="card-header"><h3>📚 Mata Pelajaran</h3></div><form id="form-mapel"><label>Kode Mapel</label><input type="text" id="kode_mapel" required><label>Nama Lengkap Mapel</label><input type="text" id="nama_mapel" required><button type="submit" class="btn btn-dark">Simpan Mapel</button></form></div>
+                    <div class="card" style="border-top: 3px solid var(--warning);"><div class="card-header"><h3 style="color: #b45309;">⚽ Ekstrakurikuler</h3></div><form id="form-ekskul"><label>Nama Ekstrakurikuler</label><input type="text" id="nama_ekskul" required><label>Pembina Ekskul (Guru)</label><select id="pembina_id" required><option value="">- Memuat... -</option></select><button type="submit" class="btn btn-warning">Simpan Ekstrakurikuler</button></form></div>
                 </div>
             </div>
 
@@ -252,8 +144,7 @@
                 <div class="card" style="max-width: 800px;">
                     <div class="card-header"><h3>🏫 Masukkan Siswa ke Kelas (Plotting)</h3></div>
                     <form id="form-anggota-kelas">
-                        <label>Pilih Kelas Tujuan:</label>
-                        <select id="plot_kelas" required><option value="">-- Memuat Kelas... --</option></select>
+                        <label>Pilih Kelas Tujuan:</label><select id="plot_kelas" required><option value="">-- Memuat Kelas... --</option></select>
                         <label>Pilih Siswa (Bisa centang banyak):</label>
                         <div id="list-siswa" class="checkbox-box" style="height: 300px;">Memuat data siswa...</div>
                         <button type="submit" class="btn btn-primary" style="padding: 12px; font-size: 1rem;">💾 Simpan Anggota Kelas</button>
@@ -265,55 +156,40 @@
                 <div class="card" style="max-width: 700px; border-top: 3px solid var(--danger);">
                     <div class="card-header"><h3 style="color: var(--danger);">🌟 Set Proyek P5 Baru</h3></div>
                     <form id="form-proyek-p5">
-                        <label>Nama Proyek</label>
-                        <input type="text" id="nama_proyek" placeholder="Cth: Suara Demokrasi Pemilihan OSIS" required>
+                        <label>Nama Proyek</label><input type="text" id="nama_proyek" required>
                         <div style="display: flex; gap: 15px;">
-                            <div style="flex: 1;">
-                                <label>Tema P5</label>
-                                <select id="tema_proyek" required>
-                                    <option value="">- Pilih Tema -</option>
-                                    <option value="Gaya Hidup Berkelanjutan">Gaya Hidup Berkelanjutan</option>
-                                    <option value="Kearifan Lokal">Kearifan Lokal</option>
-                                    <option value="Bhinneka Tunggal Ika">Bhinneka Tunggal Ika</option>
-                                    <option value="Bangunlah Jiwa dan Raganya">Bangunlah Jiwa dan Raganya</option>
-                                    <option value="Suara Demokrasi">Suara Demokrasi</option>
-                                    <option value="Rekayasa dan Teknologi">Rekayasa dan Teknologi</option>
-                                    <option value="Kewirausahaan">Kewirausahaan</option>
-                                </select>
-                            </div>
+                            <div style="flex: 1;"><label>Tema P5</label><select id="tema_proyek" required><option value="Gaya Hidup Berkelanjutan">Gaya Hidup Berkelanjutan</option><option value="Kearifan Lokal">Kearifan Lokal</option><option value="Bhinneka Tunggal Ika">Bhinneka Tunggal Ika</option><option value="Bangunlah Jiwa dan Raganya">Bangunlah Jiwa dan Raganya</option><option value="Suara Demokrasi">Suara Demokrasi</option><option value="Rekayasa dan Teknologi">Rekayasa dan Teknologi</option><option value="Kewirausahaan">Kewirausahaan</option></select></div>
                             <div style="flex: 1;"><label>Tahun Ajaran</label><select id="p5_tahun_ajaran" required><option value="">- Memuat... -</option></select></div>
                         </div>
-                        <label>Koordinator Proyek (Guru)</label>
-                        <select id="koordinator_id" required><option value="">- Memuat... -</option></select>
+                        <label>Koordinator Proyek (Guru)</label><select id="koordinator_id" required><option value="">- Memuat... -</option></select>
                         <button type="submit" class="btn btn-danger">💾 Simpan Proyek P5</button>
                     </form>
                 </div>
             </div>
 
             <div id="page-cetak" class="page-section">
-                <div class="card">
-                    <div class="card-header"><h3>🖨️ Cetak Rapor & Download Leger Semua Kelas</h3></div>
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end;">
-                        <div style="flex: 1;">
-                            <label style="margin-top:0;">Pilih Kelas</label>
-                            <select id="cetak_kelas"><option value="">-- Memuat Kelas... --</option></select>
-                        </div>
-                        <button class="btn btn-primary" style="width: auto; height: 38px; margin-top:0;" onclick="loadSiswaCetak()">🔍 Tampilkan Siswa</button>
-                        <button class="btn btn-success" style="width: auto; height: 38px; margin-top:0;" onclick="downloadLegerAdmin()">📊 Download Leger Kelas</button>
+                <div class="card" style="border-top: 3px solid var(--primary);">
+                    <div class="card-header"><h3>🖨️ Pusat Cetak Dokumen & Rekap Leger Kelas</h3></div>
+                    <div style="display: flex; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px; align-items: flex-end;">
+                        <div style="flex: 1;"><label style="margin-top: 0;">Pilih Kelas</label><select id="filter-kelas-cetak"><option value="">-- Memuat Kelas --</option></select></div>
+                        <button class="btn btn-primary" style="height: 38px; margin-top: 0;" onclick="loadSiswaCetakAdmin()">🔍 Tampilkan Data</button>
                     </div>
 
-                    <div style="overflow-x: auto;">
-                        <table id="tabel-cetak" style="display: none;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">No</th>
-                                    <th style="text-align: left;">Nama Lengkap Siswa</th>
-                                    <th style="width: 150px;">NISN</th>
-                                    <th style="width: 200px;">Aksi Dokumen</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-cetak"></tbody>
-                        </table>
+                    <div id="area-cetak-admin" style="display: none; animation: fadeIn 0.4s ease;">
+                        <div class="grid-2">
+                            <div class="card" style="background: #f0fdf4; border: 1px solid #10b981; margin-bottom: 0;">
+                                <h3 style="color: #047857; margin-top: 0; font-size: 1.1rem;">📊 Download Leger Kelas</h3>
+                                <button class="btn btn-success" style="margin-top: 10px;" onclick="downloadLegerAdmin()">📥 Download Leger (.csv)</button>
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 30px; margin-bottom: 10px; color: var(--text-main);">Cetak Dokumen Per Siswa</h4>
+                        <div style="overflow-x: auto;">
+                            <table id="tabel-cetak">
+                                <thead><tr><th style="width: 50px;">No</th><th>NISN</th><th>Nama Lengkap Siswa</th><th style="width: 200px;">Aksi Dokumen</th></tr></thead>
+                                <tbody id="tbody-cetak"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -326,7 +202,6 @@
 
         let allUsersData = [];
 
-        // 1. SISTEM NAVIGASI TAB (Tanpa Reload)
         const navLinks = document.querySelectorAll('.nav-link');
         const pages = document.querySelectorAll('.page-section');
         const topbarTitle = document.getElementById('topbar-title');
@@ -334,122 +209,72 @@
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                navLinks.forEach(l => l.classList.remove('active')); // Hapus active menu lain
-                e.target.classList.add('active'); // Aktifkan menu yang diklik
-                topbarTitle.textContent = e.target.textContent.replace(/[^\w\s]/gi, '').trim(); // Ganti judul atas
-                pages.forEach(p => p.classList.remove('active')); // Sembunyikan halaman lain
-                document.getElementById(e.target.getAttribute('data-target')).classList.add('active'); // Munculkan halaman target
+                navLinks.forEach(l => l.classList.remove('active')); e.target.classList.add('active');
+                topbarTitle.textContent = e.target.textContent.replace(/[^\w\s]/gi, '').trim();
+                pages.forEach(p => p.classList.remove('active'));
+                document.getElementById(e.target.getAttribute('data-target')).classList.add('active');
             });
         });
 
-        // 2. CEK SESI LOGIN & INISIASI AWAL
         async function init() {
             const session = await checkSession()
             if (!session) return window.location.href = 'index.html'
-            
-            // Panggil semua fungsi load data
-            loadUsers();
-            loadDataPlotting();
-            loadMasterDataDropdowns();
+            loadUsers(); loadDataPlotting(); loadMasterDataDropdowns();
         }
 
-        // 3. FUNGSI LOGOUT
         document.getElementById('btn-logout').addEventListener('click', async () => {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if(confirmLogout) {
-                await supabase.auth.signOut();
-                window.location.replace('index.html');
-            }
+            if(confirm("Apakah Anda yakin ingin keluar?")) { await supabase.auth.signOut(); window.location.replace('index.html'); }
         });
 
-        // ==========================================
-        // FUNGSI LOAD DATA DARI DATABASE
-        // ==========================================
         async function loadUsers() {
-            const selectUser = document.getElementById('select-user');
-            const selectKoordinator = document.getElementById('koordinator_id');
-            const selectPembina = document.getElementById('pembina_id');
-            const selectWalas = document.getElementById('walas_id');
-            
+            const selectUser = document.getElementById('select-user'); const selectKoordinator = document.getElementById('koordinator_id');
+            const selectPembina = document.getElementById('pembina_id'); const selectWalas = document.getElementById('walas_id');
             const { data } = await supabase.from('profiles').select('id, full_name, roles').order('full_name');
             if (data) {
                 allUsersData = data;
-                selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>';
-                selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>';
-                selectPembina.innerHTML = '<option value="">-- Pilih Pembina Ekskul --</option>';
-                selectWalas.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
-                
+                selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>'; selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>';
+                selectPembina.innerHTML = '<option value="">-- Pilih Pembina Ekskul --</option>'; selectWalas.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
                 data.forEach(user => {
                     let roleString = user.roles ? user.roles.join(', ') : 'Belum Ada Role';
                     selectUser.innerHTML += `<option value="${user.id}">${user.full_name} (${roleString})</option>`;
                     selectKoordinator.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
                     selectPembina.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
-                    
-                    // Filter: Hanya guru yang punya role wali_kelas yang muncul di form Kelas
-                    if(user.roles && user.roles.includes('wali_kelas')) {
-                        selectWalas.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
-                    }
+                    if(user.roles && user.roles.includes('wali_kelas')) selectWalas.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
                 });
             }
         }
 
         document.getElementById('select-user').addEventListener('change', (e) => {
-            const userId = e.target.value;
-            document.querySelectorAll('input[name="role_cek"]').forEach(cb => cb.checked = false);
+            const userId = e.target.value; document.querySelectorAll('input[name="role_cek"]').forEach(cb => cb.checked = false);
             if (!userId) return;
             const user = allUsersData.find(u => u.id === userId);
-            if (user && user.roles) {
-                user.roles.forEach(role => {
-                    const cb = document.querySelector(`input[name="role_cek"][value="${role}"]`);
-                    if (cb) cb.checked = true;
-                });
-            }
+            if (user && user.roles) user.roles.forEach(role => { const cb = document.querySelector(`input[name="role_cek"][value="${role}"]`); if (cb) cb.checked = true; });
         });
 
         async function loadDataPlotting() {
-            const plotKelas = document.getElementById('plot_kelas'); 
-            const listSiswa = document.getElementById('list-siswa');
-            const cetakKelas = document.getElementById('cetak_kelas'); // Dropdown baru untuk menu cetak
-            
+            const plotKelas = document.getElementById('plot_kelas'); const listSiswa = document.getElementById('list-siswa'); const cetakKelas = document.getElementById('filter-kelas-cetak');
             const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
             if (kelas) { 
-                plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; 
-                cetakKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; 
-                kelas.forEach(k => {
-                    plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`;
-                    cetakKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`;
-                });
+                plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; cetakKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; 
+                kelas.forEach(k => { plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; cetakKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; });
             }
-            
             const { data: siswa } = await supabase.from('siswa').select('id, nama_lengkap, nisn, agama').order('nama_lengkap');
             if (siswa) { 
                 listSiswa.innerHTML = ''; 
-                siswa.forEach(s => { 
-                    listSiswa.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="siswa_cek" value="${s.id}"> ${s.nama_lengkap} <span style="color:var(--text-muted); font-size:0.85rem;">(${s.nisn} - ${s.agama || 'Islam'})</span></label>`;
-                });
+                siswa.forEach(s => { listSiswa.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="siswa_cek" value="${s.id}"> ${s.nama_lengkap} <span style="color:var(--text-muted); font-size:0.85rem;">(${s.nisn} - ${s.agama || 'Islam'})</span></label>`; });
             }
         }
 
         async function loadMasterDataDropdowns() {
             const selectTapel = document.getElementById('p5_tahun_ajaran');
             const { data: tapel } = await supabase.from('tahun_ajaran').select('id, nama, semester').order('nama');
-            if (tapel) { 
-                selectTapel.innerHTML = '<option value="">-- Pilih Tahun Ajaran --</option>'; 
-                tapel.forEach(t => selectTapel.innerHTML += `<option value="${t.id}">${t.nama} (Smt ${t.semester})</option>`);
-            }
+            if (tapel) { selectTapel.innerHTML = '<option value="">-- Pilih Tahun Ajaran --</option>'; tapel.forEach(t => selectTapel.innerHTML += `<option value="${t.id}">${t.nama} (Smt ${t.semester})</option>`); }
         }
 
-        // ==========================================
-        // FUNGSI SIMPAN FORM (INSERT KE DATABASE)
-        // ==========================================
-
         document.getElementById('form-role').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('select-user').value;
-            const checkboxes = document.querySelectorAll('input[name="role_cek"]:checked');
+            e.preventDefault(); const id = document.getElementById('select-user').value; const checkboxes = document.querySelectorAll('input[name="role_cek"]:checked');
             let selectedRoles = []; checkboxes.forEach(cb => selectedRoles.push(cb.value));
             if (selectedRoles.length === 0) return alert("⚠️ Pilih minimal satu hak akses!");
-            
             const btn = e.target.querySelector('button'); btn.textContent = 'Memproses...';
             const { error } = await supabase.from('profiles').update({ roles: selectedRoles }).eq('id', id);
             if (error) alert("Error: " + error.message); else { alert("✅ Hak Akses berhasil diperbarui!"); loadUsers(); }
@@ -458,160 +283,75 @@
 
         document.getElementById('form-siswa').addEventListener('submit', async (e) => { 
             e.preventDefault(); 
-            const { error } = await supabase.from('siswa').insert([{ 
-                nisn: document.getElementById('nisn').value, 
-                nama_lengkap: document.getElementById('nama_siswa').value, 
-                jenis_kelamin: document.getElementById('jk_siswa').value,
-                agama: document.getElementById('agama_siswa').value
-            }]); 
+            const { error } = await supabase.from('siswa').insert([{ nisn: document.getElementById('nisn').value, nama_lengkap: document.getElementById('nama_siswa').value, jenis_kelamin: document.getElementById('jk_siswa').value, agama: document.getElementById('agama_siswa').value }]); 
             if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } 
         });
 
         document.getElementById('btn-import-csv').addEventListener('click', async () => { 
-            const fileInput = document.getElementById('file-csv'); 
-            const statusText = document.getElementById('status-import'); 
-            if (!fileInput.files.length) return alert("Pilih file CSV!"); 
-            
-            statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses, mohon tunggu...'; 
-            
-            Papa.parse(fileInput.files[0], { 
-                header: true, skipEmptyLines: true, 
-                complete: async function(results) { 
-                    const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); 
-                    let sukses = 0, gagal = 0; 
-                    
-                    for (let row of results.data) { 
-                        try { 
-                            if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } 
-                            const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); 
-                            
-                            const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([{ 
-                                nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase(), agama: row.agama || 'Islam' 
-                            }]).select('id').single(); 
-                            
-                            if (err) { gagal++; continue; } 
-                            if (kelasTujuan && siswaBaru) await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); 
-                            sukses++; 
-                        } catch (e) { gagal++; } 
-                    } 
-                    statusText.style.color = 'green'; statusText.textContent = `✅ Import Selesai! Sukses masuk: ${sukses} siswa | Gagal/Ganda: ${gagal}`; 
-                    loadDataPlotting(); 
-                } 
+            const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); 
+            if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses...'; 
+            Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { 
+                const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; 
+                for (let row of results.data) { try { 
+                    if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } 
+                    const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); 
+                    const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([{ nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase(), agama: row.agama || 'Islam' }]).select('id').single(); 
+                    if (err) { gagal++; continue; } 
+                    if (kelasTujuan && siswaBaru) await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); 
+                    sukses++; } catch (e) { gagal++; } 
+                } statusText.style.color = 'green'; statusText.textContent = `✅ Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; loadDataPlotting(); } 
             }); 
         });
 
         document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            const kelasId = document.getElementById('plot_kelas').value; 
-            const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked'); 
-            if (checkboxes.length === 0) return alert("⚠️ Centang minimal satu siswa!"); 
-            
-            let errorCount = 0; 
-            for (let cb of checkboxes) { 
-                const { error } = await supabase.from('anggota_kelas').insert([{ siswa_id: cb.value, kelas_id: kelasId }]); 
-                if (error && error.code !== '23505') errorCount++; 
-            } 
-            if (errorCount > 0) alert(`⚠️ Ada ${errorCount} data gagal disimpan.`); 
-            else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } 
+            e.preventDefault(); const kelasId = document.getElementById('plot_kelas').value; const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked'); 
+            if (checkboxes.length === 0) return alert("⚠️ Centang minimal satu siswa!"); let errorCount = 0; 
+            for (let cb of checkboxes) { const { error } = await supabase.from('anggota_kelas').insert([{ siswa_id: cb.value, kelas_id: kelasId }]); if (error && error.code !== '23505') errorCount++; } 
+            if (errorCount > 0) alert(`⚠️ Ada ${errorCount} data gagal disimpan.`); else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } 
         });
 
         document.getElementById('form-tapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('tahun_ajaran').insert([{ nama: document.getElementById('nama_tapel').value, semester: document.getElementById('smt_tapel').value, is_active: true }]); alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); });
-        
-        document.getElementById('form-kelas').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            const walasId = document.getElementById('walas_id').value || null;
-            await supabase.from('kelas').insert([{ nama_kelas: document.getElementById('nama_kelas').value, tingkat: document.getElementById('tingkat_kelas').value, wali_kelas_id: walasId }]); 
-            alert("✅ Kelas & Wali Kelas Tersimpan!"); e.target.reset(); loadDataPlotting(); 
-        });
-
+        document.getElementById('form-kelas').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('kelas').insert([{ nama_kelas: document.getElementById('nama_kelas').value, tingkat: document.getElementById('tingkat_kelas').value, wali_kelas_id: document.getElementById('walas_id').value || null }]); alert("✅ Kelas & Wali Kelas Tersimpan!"); e.target.reset(); loadDataPlotting(); });
         document.getElementById('form-mapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('mata_pelajaran').insert([{ kode_mapel: document.getElementById('kode_mapel').value, nama_mapel: document.getElementById('nama_mapel').value }]); alert("✅ Tersimpan!"); e.target.reset(); });
-        
-        document.getElementById('form-ekskul').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            const { error } = await supabase.from('ekstrakurikuler').insert([{ nama_ekskul: document.getElementById('nama_ekskul').value, pembina_id: document.getElementById('pembina_id').value }]); 
-            if(error) alert("Error: " + error.message); else { alert("✅ Ekstrakurikuler tersimpan!"); e.target.reset(); }
-        });
+        document.getElementById('form-ekskul').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('ekstrakurikuler').insert([{ nama_ekskul: document.getElementById('nama_ekskul').value, pembina_id: document.getElementById('pembina_id').value }]); if(error) alert("Error: " + error.message); else { alert("✅ Ekstrakurikuler tersimpan!"); e.target.reset(); }});
+        document.getElementById('form-proyek-p5').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('proyek_p5').insert([{ nama_proyek: document.getElementById('nama_proyek').value, tema: document.getElementById('tema_proyek').value, koordinator_id: document.getElementById('koordinator_id').value, tahun_ajaran_id: document.getElementById('p5_tahun_ajaran').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Proyek P5 dibuat!"); e.target.reset(); } });
 
-        document.getElementById('form-proyek-p5').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            const { error } = await supabase.from('proyek_p5').insert([{ nama_proyek: document.getElementById('nama_proyek').value, tema: document.getElementById('tema_proyek').value, koordinator_id: document.getElementById('koordinator_id').value, tahun_ajaran_id: document.getElementById('p5_tahun_ajaran').value }]); 
-            if (error) alert("Error: " + error.message); else { alert("✅ Proyek P5 dibuat!"); e.target.reset(); } 
-        });
-
-        // ==========================================
-        // FUNGSI BARU: CETAK RAPOR & LEGER OLEH ADMIN
-        // ==========================================
-        window.loadSiswaCetak = async () => {
-            const kelasId = document.getElementById('cetak_kelas').value;
-            const tbody = document.getElementById('tbody-cetak');
+        window.loadSiswaCetakAdmin = async () => {
+            const kelasId = document.getElementById('filter-kelas-cetak').value; const tbody = document.getElementById('tbody-cetak');
             if(!kelasId) return alert("Pilih Kelas terlebih dahulu!");
-
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>';
-            document.getElementById('tabel-cetak').style.display = 'table';
-
+            document.getElementById('area-cetak-admin').style.display = 'block'; tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>';
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
-
-            if(!anggota || anggota.length === 0) {
-                return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Tidak ada siswa di kelas ini.</td></tr>';
-            }
-
+            if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Tidak ada siswa di kelas ini.</td></tr>';
             tbody.innerHTML = '';
             anggota.forEach((a, index) => {
-                tbody.innerHTML += `
-                <tr>
-                    <td style="text-align:center;">${index + 1}</td>
-                    <td style="text-align:left;"><b>${a.siswa.nama_lengkap}</b></td>
-                    <td style="text-align:center;">${a.siswa.nisn}</td>
-                    <td style="text-align:center;">
-                        <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; margin-right: 5px;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button>
-                        <button type="button" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 P5</button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${a.siswa.nisn}</td><td style="font-weight: 500;">${a.siswa.nama_lengkap}</td><td style="text-align:center;"><button type="button" class="btn btn-dark" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin:0 5px 0 0;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button><button type="button" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin:0;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 P5</button></td></tr>`;
             });
         };
 
         window.downloadLegerAdmin = async () => {
-            const kelasId = document.getElementById('cetak_kelas').value;
+            const kelasId = document.getElementById('filter-kelas-cetak').value;
             if(!kelasId) return alert("⚠️ Silakan pilih Kelas terlebih dahulu.");
-            const dropdown = document.getElementById('cetak_kelas');
-            const kelasName = dropdown.options[dropdown.selectedIndex].text;
-
+            const dropdown = document.getElementById('filter-kelas-cetak'); const kelasName = dropdown.options[dropdown.selectedIndex].text;
             const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId);
-            if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa di kelas ini.");
+            if(!anggota || anggota.length === 0) return alert("Tidak ada data siswa.");
             const anggotaIds = anggota.map(a => a.id);
-
             const { data: pgm } = await supabase.from('pengampu_mapel').select('id, mata_pelajaran(nama_mapel)').eq('kelas_id', kelasId);
             let mapelMap = {}; let mapelArray = [];
             if(pgm) { pgm.forEach(p => { mapelMap[p.id] = p.mata_pelajaran.nama_mapel; if(!mapelArray.includes(p.mata_pelajaran.nama_mapel)) mapelArray.push(p.mata_pelajaran.nama_mapel); }); }
             mapelArray.sort();
-
             const { data: nilai } = await supabase.from('nilai_akademik').select('anggota_kelas_id, pengampu_mapel_id, nilai_akhir').in('anggota_kelas_id', anggotaIds);
             const { data: absen } = await supabase.from('absensi_catatan').select('anggota_kelas_id, sakit, izin, tanpa_keterangan').in('anggota_kelas_id', anggotaIds);
             let mapAbsen = {}; if(absen) absen.forEach(a => mapAbsen[a.anggota_kelas_id] = a);
-
             let dataLeger = anggota.map(a => {
-                let rowData = { "NISN": a.siswa.nisn, "NAMA SISWA": a.siswa.nama_lengkap };
-                let totalNilai = 0; let jumlahMapelDiisi = 0;
+                let rowData = { "NISN": a.siswa.nisn, "NAMA SISWA": a.siswa.nama_lengkap }; let totalNilai = 0; let jumlahMapelDiisi = 0;
                 mapelArray.forEach(m => { rowData[m] = ''; });
-
-                if (nilai) {
-                    let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id);
-                    nilaiAnak.forEach(n => {
-                        let namaMapel = mapelMap[n.pengampu_mapel_id]; let nilaiAkhir = n.nilai_akhir || 0;
-                        if (namaMapel) { rowData[namaMapel] = nilaiAkhir; totalNilai += parseFloat(nilaiAkhir); jumlahMapelDiisi++; }
-                    });
-                }
+                if (nilai) { let nilaiAnak = nilai.filter(n => n.anggota_kelas_id === a.id); nilaiAnak.forEach(n => { let namaMapel = mapelMap[n.pengampu_mapel_id]; let nilaiAkhir = n.nilai_akhir || 0; if (namaMapel) { rowData[namaMapel] = nilaiAkhir; totalNilai += parseFloat(nilaiAkhir); jumlahMapelDiisi++; } }); }
                 rowData["TOTAL NILAI"] = totalNilai; rowData["RATA-RATA"] = jumlahMapelDiisi > 0 ? (totalNilai / jumlahMapelDiisi).toFixed(2) : 0;
-                let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 };
-                rowData["SAKIT"] = abs.sakit || 0; rowData["IZIN"] = abs.izin || 0; rowData["ALPA"] = abs.tanpa_keterangan || 0;
-                return rowData;
+                let abs = mapAbsen[a.id] || { sakit: 0, izin: 0, tanpa_keterangan: 0 }; rowData["SAKIT"] = abs.sakit || 0; rowData["IZIN"] = abs.izin || 0; rowData["ALPA"] = abs.tanpa_keterangan || 0; return rowData;
             });
-
-            let csv = Papa.unparse(dataLeger); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Leger_Nilai_Kelas_${kelasName}.csv`; link.click();
+            let csv = Papa.unparse(dataLeger); let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Leger_Kelas_${kelasName}.csv`; link.click();
         };
 
-        // Jalankan saat aplikasi dibuka
         init();
     </script>
 </body>
