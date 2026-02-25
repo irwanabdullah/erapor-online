@@ -3,60 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Rapor Proyek P5</title>
+    <title>Cetak Rapor P5</title>
     <style>
-        @page { size: A4; margin: 15mm 20mm 25mm 20mm; } /* Extra margin bawah */
+        @page { size: A4; margin: 15mm 20mm 25mm 20mm; } 
         body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; background: #fff; line-height: 1.4; margin: 0; }
+        
         .header { text-align: center; font-weight: bold; margin-bottom: 20px; }
+        .header h2 { margin: 0; font-size: 14pt; }
+        .header h3 { margin: 0; font-size: 12pt; font-weight: normal; }
+        
         .identitas { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
         .identitas td { padding: 2px 5px; vertical-align: top; }
         
-        table.tabel-p5 { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; page-break-inside: avoid; }
-        table.tabel-p5 th, table.tabel-p5 td { border: 1px solid #000; padding: 6px; vertical-align: middle; }
-        table.tabel-p5 th { background-color: #f2f2f2; text-align: center; font-weight: bold; font-size: 10pt;}
-        .text-center { text-align: center; }
-        .check-mark { font-family: sans-serif; font-size: 14pt; font-weight: bold; }
+        .proyek-container { margin-bottom: 30px; page-break-inside: avoid; }
+        .proyek-title { font-weight: bold; font-size: 12pt; margin-bottom: 5px; background: #e5e7eb; padding: 5px 10px; border: 1px solid #000;}
+        .proyek-desc { text-align: justify; margin-bottom: 15px; font-size: 10.5pt; }
+
+        table.tabel-utama { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        table.tabel-utama th, table.tabel-utama td { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; }
+        table.tabel-utama th { background-color: #f2f2f2; text-align: center; font-weight: bold; font-size: 10pt;}
         
-        .proyek-title { font-weight: bold; margin-top: 20px; background-color: #e2e8f0; padding: 5px 10px; border: 1px solid #000; border-bottom: none; }
+        .text-center { text-align: center; }
+        .check-mark { font-family: sans-serif; font-weight: bold; font-size: 12pt; }
+
+        .box-catatan { border: 1px solid #000; padding: 10px; min-height: 50px; margin-bottom: 15px; font-size: 10.5pt; text-align: justify;}
+        
         .ttd-box { width: 100%; margin-top: 30px; text-align: center; page-break-inside: avoid; }
         .ttd-box td { width: 33%; vertical-align: top; padding-top: 10px; }
         .ttd-space { height: 70px; }
 
-        /* --- MAGIC FOOTER PRINT --- */
         .footer-print {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            font-size: 10pt;
-            display: flex;
-            justify-content: space-between;
-            background: #fff;
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            border-top: 1px solid #000; padding-top: 5px; font-size: 10pt;
+            display: flex; justify-content: space-between; background: #fff;
         }
 
         @media screen { 
             .no-print { display: block; } 
-            .footer-print { display: none; }
+            .footer-print { display: none; } 
         }
         @media print { 
             .no-print { display: none; } 
             .footer-print { display: flex; }
         }
-            /* Penghitung Halaman CSS */
+        
         body { counter-reset: halaman; }
-        .page-number::after { 
-            counter-increment: halaman; 
-            content: counter(halaman); 
-        }
+        .page-number::after { counter-increment: halaman; content: counter(halaman); }
     </style>
 </head>
 <body>
     <button class="no-print" onclick="window.print()" style="padding: 10px 20px; font-size: 14px; margin-bottom: 20px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ Cetak Rapor P5</button>
 
     <div class="header">
-        <h2>RAPOR KOKURIKULER</h2>
+        <h2>RAPOR PROYEK PENGUATAN PROFIL PELAJAR PANCASILA</h2>
+        <h3>(P5)</h3>
     </div>
 
     <table class="identitas">
@@ -70,12 +70,20 @@
         </tr>
         <tr>
             <td>Nama Sekolah</td><td>:</td><td><b>UPT SPF SMP NEGERI 13 MAKASSAR</b></td>
-            <td>Tahun Pelajaran</td><td>:</td><td>2025/2026</td>
+            <td>Tahun Pelajaran</td><td>:</td><td>2024/2025</td>
+        </tr>
+        <tr>
+            <td>Alamat</td><td>:</td><td colspan="4">Jl. Tamalate VI No. 2 Perumnas-Makassar</td>
         </tr>
     </table>
 
-    <div id="p5-container">
-        <p class="text-center">Memuat data capaian Proyek P5 dari database...</p>
+    <div style="margin-bottom: 20px; font-size: 10pt;">
+        <b>Keterangan Tingkat Pencapaian:</b><br>
+        <b>BB</b> = Belum Berkembang | <b>MB</b> = Mulai Berkembang | <b>BSH</b> = Berkembang Sesuai Harapan | <b>SB</b> = Sangat Berkembang
+    </div>
+
+    <div id="area-proyek">
+        <div class="text-center" style="padding: 30px;">Memuat data proyek...</div>
     </div>
 
     <table class="ttd-box">
@@ -86,7 +94,7 @@
         </tr>
         <tr>
             <td></td>
-            <td style="padding-top: 20px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>Drs. Ramli, M.Pd.</u></b><br>NIP. 19800101 200501 1 002</td>
+            <td style="padding-top: 30px;">Mengetahui,<br>Kepala Sekolah<div class="ttd-space"></div><b><u>Drs. Ramli., M.Pd.</u></b><br>NIP. 196611091996021002</td>
             <td></td>
         </tr>
     </table>
@@ -100,19 +108,126 @@
         import { supabase, checkSession } from './app.js'
 
         async function loadRaporP5() {
-            const params = new URLSearchParams(window.location.search); const id = params.get('id');
+            const params = new URLSearchParams(window.location.search); 
+            const id = params.get('id');
             if(!id) return;
 
+            // 1. Ambil Data Identitas Siswa
             const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn), kelas(nama_kelas)').eq('id', id).single();
             if(agt) {
                 document.getElementById('nama_siswa').textContent = agt.siswa.nama_lengkap;
                 document.getElementById('nisn').textContent = '- / ' + agt.siswa.nisn;
                 document.getElementById('kelas').textContent = agt.kelas.nama_kelas;
-                
-                // MENGISI DATA KE FOOTER OTOMATIS
                 document.getElementById('footer-kiri').textContent = `Kelas ${agt.kelas.nama_kelas} | ${agt.siswa.nama_lengkap} | ${agt.siswa.nisn}`;
             }
 
+            // 2. Ambil Data Nilai P5 beserta info deskripsinya
+            const {data: nilai} = await supabase.from('nilai_p5').select('capaian, catatan, dimensi, proyek_p5(*)').eq('anggota_kelas_id', id);
+            
+            const areaProyek = document.getElementById('area-proyek');
+            
+            if(!nilai || nilai.length === 0) {
+                areaProyek.innerHTML = '<div class="text-center" style="padding: 20px; border: 1px solid #000;">Belum ada data penilaian P5 untuk siswa ini.</div>';
+            } else {
+                areaProyek.innerHTML = '';
+                
+                // Kelompokkan data nilai berdasarkan Proyek (karena 1 siswa bisa punya 2-3 proyek setahun)
+                let groupedProjects = {};
+                nilai.forEach(n => {
+                    let pNama = n.proyek_p5.nama_proyek;
+                    if(!groupedProjects[pNama]) {
+                        groupedProjects[pNama] = {
+                            info: n.proyek_p5,
+                            dimensiList: [],
+                            catatanKhusus: []
+                        };
+                    }
+                    groupedProjects[pNama].dimensiList.push(n);
+                    if(n.catatan && n.catatan.trim() !== '') {
+                        groupedProjects[pNama].catatanKhusus.push(n.catatan);
+                    }
+                });
+
+                // Generate HTML untuk setiap Proyek
+                let urutanProyek = 1;
+                for (let key in groupedProjects) {
+                    let proj = groupedProjects[key];
+                    let info = proj.info;
+                    
+                    // Buat header proyek
+                    let html = `
+                    <div class="proyek-container">
+                        <div class="proyek-title">Proyek ${urutanProyek}: ${info.nama_proyek} (Tema: ${info.tema})</div>
+                        <div class="proyek-desc">${info.deskripsi_proyek || '<i>Deskripsi proyek belum diisi oleh koordinator.</i>'}</div>
+                        
+                        <table class="tabel-utama">
+                            <thead>
+                                <tr>
+                                    <th width="60%">Dimensi & Target Capaian</th>
+                                    <th width="10%">BB</th>
+                                    <th width="10%">MB</th>
+                                    <th width="10%">BSH</th>
+                                    <th width="10%">SB</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    // Masukkan baris dimensi
+                    proj.dimensiList.forEach(d => {
+                        // Cocokkan dimensi dengan deskripsinya dari tabel proyek_p5
+                        let descDimensi = "";
+                        if (d.dimensi === "Beriman & Bertakwa") descDimensi = info.desc_beriman;
+                        else if (d.dimensi === "Berkebinekaan Global") descDimensi = info.desc_berkebinekaan;
+                        else if (d.dimensi === "Bergotong Royong") descDimensi = info.desc_gotong_royong;
+                        else if (d.dimensi === "Mandiri") descDimensi = info.desc_mandiri;
+                        else if (d.dimensi === "Bernalar Kritis") descDimensi = info.desc_kritis;
+                        else if (d.dimensi === "Kreatif") descDimensi = info.desc_kreatif;
+
+                        // Tentukan letak centang (✓)
+                        let cBB = d.capaian === 'BB' ? '✓' : '';
+                        let cMB = d.capaian === 'MB' ? '✓' : '';
+                        let cBSH = d.capaian === 'BSH' ? '✓' : '';
+                        let cSB = d.capaian === 'SB' ? '✓' : '';
+
+                        html += `
+                                <tr>
+                                    <td>
+                                        <b>${d.dimensi}</b><br>
+                                        <span style="font-size: 10pt;">- ${descDimensi || '<i>Target capaian dimensi ini belum diisi.</i>'}</span>
+                                    </td>
+                                    <td class="text-center check-mark">${cBB}</td>
+                                    <td class="text-center check-mark">${cMB}</td>
+                                    <td class="text-center check-mark">${cBSH}</td>
+                                    <td class="text-center check-mark">${cSB}</td>
+                                </tr>
+                        `;
+                    });
+
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    // Jika ada catatan proses observasi dari guru
+                    if(proj.catatanKhusus.length > 0) {
+                        // Gabungkan semua catatan menjadi satu paragraf yang rapi
+                        let gabunganCatatan = proj.catatanKhusus.join(' ');
+                        html += `
+                        <div class="box-catatan">
+                            <b>Catatan Proses Observasi Proyek:</b><br>
+                            ${gabunganCatatan}
+                        </div>
+                        `;
+                    }
+
+                    html += `</div>`; // Tutup proyek-container
+                    areaProyek.innerHTML += html;
+                    urutanProyek++;
+                }
+            }
+
+            // 3. Tanda Tangan dan Tanggal
             document.getElementById('tgl_cetak').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
             const session = await checkSession();
@@ -123,40 +238,12 @@
                     document.getElementById('nip_walas').textContent = profile.nip ? profile.nip : '-';
                 }
             }
-
-            const {data: p5} = await supabase.from('nilai_p5').select('dimensi, capaian, catatan, proyek_p5(nama_proyek, tema)').eq('anggota_kelas_id', id);
-            const container = document.getElementById('p5-container');
             
-            if(p5 && p5.length > 0) {
-                let grouped = {};
-                p5.forEach(n => {
-                    let pName = n.proyek_p5.nama_proyek;
-                    if(!grouped[pName]) grouped[pName] = { tema: n.proyek_p5.tema, items: [] };
-                    grouped[pName].items.push(n);
-                });
-
-                container.innerHTML = ''; let proyekCount = 1;
-                for(let pName in grouped) {
-                    let html = `<div class="proyek-title">Projek ${proyekCount} | ${pName}</div>
-                    <div style="border: 1px solid #000; border-bottom: none; padding: 5px 10px; font-size: 10pt; text-align: justify;">Tema: ${grouped[pName].tema}.</div>
-                    <table class="tabel-p5">
-                        <thead><tr><th width="30%">Dimensi Profil Pancasila</th><th width="10%">Belum Berkembang (BB)</th><th width="10%">Mulai Berkembang (MB)</th><th width="10%">Berkembang Sesuai Harapan (BSH)</th><th width="10%">Sangat Berkembang (SB)</th><th width="30%">Catatan Proses</th></tr></thead>
-                        <tbody>`;
-                    
-                    grouped[pName].items.forEach(item => { html += `<tr><td>${item.dimensi}</td><td class="text-center check-mark">${item.capaian === 'BB' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'MB' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'BSH' ? '√' : ''}</td><td class="text-center check-mark">${item.capaian === 'SB' ? '√' : ''}</td><td style="font-size: 10pt;">${item.catatan}</td></tr>`; });
-                    html += `</tbody></table>`; container.innerHTML += html; proyekCount++;
-                }
-            } else {
-                container.innerHTML = '<p class="text-center" style="color:red; border: 1px dashed red; padding: 20px;">Belum ada nilai Proyek P5 yang diinputkan untuk siswa ini.</p>';
-            }
-            
-            // Trigger dialog print otomatis
+            // Trigger dialog print otomatis setelah 1 detik
             setTimeout(() => window.print(), 1000);
         }
-        loadRaporP5();
         
+        loadRaporP5();
     </script>
 </body>
 </html>
-
-
