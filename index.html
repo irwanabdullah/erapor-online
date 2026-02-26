@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | e-Rapor Online</title>
+    <title>Login | e-Rapor SMPN 13 Makassar</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
-            --bg-color: #f3f4f6;
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
@@ -18,36 +17,67 @@
 
         body {
             margin: 0; padding: 0; font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color); color: var(--text-main);
-            display: flex; height: 100vh; justify-content: center; align-items: center;
+            display: flex; height: 100vh; overflow: hidden;
+            background-color: var(--white);
+        }
+
+        /* LAYOUT KIRI: BAGIAN GAMBAR */
+        .image-section {
+            flex: 1.2; /* Sedikit lebih lebar dari form */
+            background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1351&q=80') center/cover no-repeat;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 50px;
+            color: white;
+        }
+
+        /* Efek gelap transparan di atas gambar agar teks terbaca */
+        .image-section::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(37, 99, 235, 0.2), rgba(15, 23, 42, 0.9));
+        }
+
+        .overlay-text {
+            position: relative; z-index: 1;
+        }
+
+        .overlay-text h2 {
+            font-size: 2.5rem; margin: 0 0 10px 0; line-height: 1.2;
+        }
+
+        .overlay-text p {
+            font-size: 1.1rem; margin: 0; opacity: 0.9;
+        }
+
+        /* LAYOUT KANAN: FORM LOGIN */
+        .form-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--white);
+            padding: 40px;
         }
 
         .login-container {
-            background: var(--white);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             width: 100%;
-            max-width: 400px;
-            border: 1px solid var(--border-color);
+            max-width: 380px;
         }
 
         .login-header {
-            text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
         .login-header h1 {
-            margin: 0; font-size: 1.5rem; color: var(--primary);
+            margin: 0; font-size: 1.8rem; color: var(--text-main);
         }
 
         .login-header p {
-            margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted);
+            margin: 8px 0 0 0; font-size: 0.95rem; color: var(--text-muted);
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         label {
             font-size: 0.85rem; font-weight: 600; color: var(--text-main);
@@ -55,9 +85,9 @@
         }
 
         input[type="email"], input[type="password"], select {
-            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border-color);
             border-radius: 8px; font-size: 0.95rem; font-family: 'Inter', sans-serif;
-            background: #f9fafb; transition: 0.2s; box-sizing: border-box;
+            background: #f9fafb; transition: all 0.2s; box-sizing: border-box;
         }
 
         input:focus, select:focus {
@@ -66,60 +96,71 @@
         }
 
         .btn-login {
-            width: 100%; padding: 12px; background-color: var(--primary);
+            width: 100%; padding: 14px; background-color: var(--primary);
             color: white; border: none; border-radius: 8px; cursor: pointer;
             font-weight: 600; font-size: 1rem; font-family: 'Inter', sans-serif;
-            transition: all 0.2s; margin-top: 10px;
+            transition: all 0.2s; margin-top: 15px;
         }
 
-        .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
-        .btn-login:disabled { background-color: #93c5fd; cursor: not-allowed; transform: none; }
+        .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+        .btn-login:disabled { background-color: #93c5fd; cursor: not-allowed; transform: none; box-shadow: none;}
 
+        /* Responsif untuk HP: Sembunyikan gambar jika layar kecil */
+        @media (max-width: 768px) {
+            .image-section { display: none; }
+            .form-section { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="login-header">
-            <h1>e-Rapor Online</h1>
-            <p>Silakan masuk menggunakan akun Anda</p>
+    <div class="image-section">
+        <div class="overlay-text">
+            <h2>e-Rapor Kurikulum Merdeka</h2>
+            <p>Sistem Informasi Akademik & Penilaian Terpadu<br><b>UPT SPF SMP Negeri 13 Makassar</b></p>
         </div>
+    </div>
 
-        <form id="form-login">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="nama@sekolah.com" required>
+    <div class="form-section">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Selamat Datang 👋</h1>
+                <p>Silakan masuk ke akun Anda untuk melanjutkan.</p>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="email">Email Pengguna</label>
+                    <input type="email" id="email" placeholder="nama@sekolah.com" required>
+                </div>
 
-            <div class="form-group">
-                <label for="login_tapel">Pilih Tahun Ajaran & Semester</label>
-                <select id="login_tapel" required>
-                    <option value="">⏳ Memuat data dari server...</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="password">Kata Sandi</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
 
-            <button type="submit" id="btn-login" class="btn-login">Masuk ke Sistem</button>
-        </form>
+                <div class="form-group">
+                    <label for="login_tapel">Tahun Ajaran Aktif</label>
+                    <select id="login_tapel" required>
+                        <option value="">⏳ Memuat data dari server...</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btn-login" class="btn-login">Masuk ke Dasbor</button>
+            </form>
+        </div>
     </div>
 
     <script type="module">
-        import { supabase } from './app.js' // Pastikan file app.js Anda ada di folder yang sama
+        import { supabase } from './app.js'
 
         // 1. Fungsi untuk menarik data Tahun Ajaran ke Dropdown
         async function loadTapelLogin() {
-            // Urutkan dari yang paling baru (ID terbesar)
             const { data, error } = await supabase.from('tahun_ajaran').select('*').order('id', { ascending: false });
-            
             const selectTapel = document.getElementById('login_tapel');
             
             if (data && data.length > 0) {
-                selectTapel.innerHTML = ''; // Kosongkan tulisan "Memuat..."
-                
+                selectTapel.innerHTML = '';
                 data.forEach(t => {
                     let namaSemester = t.semester == '1' ? 'Ganjil' : 'Genap';
                     selectTapel.innerHTML += `<option value="${t.id}">${t.nama} - Semester ${namaSemester}</option>`;
@@ -129,7 +170,6 @@
             }
         }
 
-        // Jalankan fungsi load data saat halaman dibuka
         loadTapelLogin();
 
         // 2. Fungsi Proses Login
@@ -147,37 +187,30 @@
             const selectedTapelId = tapelDropdown.value;
             const selectedTapelText = tapelDropdown.options[tapelDropdown.selectedIndex]?.text;
 
-            // Pastikan Tahun Ajaran sudah dipilih
             if (!selectedTapelId) {
                 alert("⚠️ Sistem tidak mendeteksi Tahun Ajaran. Hubungi Admin.");
-                btn.textContent = 'Masuk ke Sistem';
+                btn.textContent = 'Masuk ke Dasbor';
                 btn.disabled = false;
                 return;
             }
 
-            // Eksekusi Login dengan Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: password });
 
             if (error) {
-                alert("❌ Login Gagal: Email atau Password salah.");
-                btn.textContent = 'Masuk ke Sistem';
+                alert("❌ Login Gagal: Email atau Kata Sandi salah.");
+                btn.textContent = 'Masuk ke Dasbor';
                 btn.disabled = false;
             } else {
-                // LOGIN BERHASIL: Simpan pilihan semester ke "Ingatan Browser" (Local Storage)
+                // Simpan Pilihan Tahun Ajaran
                 localStorage.setItem('aktif_tapel_id', selectedTapelId);
                 localStorage.setItem('aktif_tapel_nama', selectedTapelText);
 
-                // Cek Jabatan (Role) untuk menentukan dia masuk ke Panel Admin atau Guru
+                // Cek Role
                 const { data: profile } = await supabase.from('profiles').select('roles').eq('id', data.user.id).single();
                 
                 if (profile && profile.roles && profile.roles.includes('admin')) {
-                    // Jika dia admin, arahkan ke admin.html
                     window.location.replace('admin.html');
                 } else {
-                    // Jika guru/wali kelas/dll, arahkan ke guru.html
                     window.location.replace('guru.html');
                 }
             }
