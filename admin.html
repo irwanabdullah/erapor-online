@@ -106,11 +106,15 @@
                             <button type="submit" class="btn btn-primary">➕ Simpan Siswa</button>
                         </form>
                     </div>
+
                     <div class="card" style="background: #f0fdf4; border: 1px dashed #10b981;">
-                        <div class="card-header"><h3 style="color: #047857;">🚀 Import Siswa (Massal Excel/CSV)</h3></div>
-                        <p style="font-size: 0.85rem; color: #047857; margin-top: 0;">Buat 5 kolom di Excel: <b>nisn, nama, jk, agama, kelas</b></p>
+                        <div class="card-header"><h3 style="color: #047857;">🚀 Import Data Siswa (Excel/CSV)</h3></div>
+                        <p style="font-size: 0.85rem; color: #047857; margin-top: 0;">Gunakan template di bawah untuk memastikan nama kolom sesuai dengan database.</p>
+                        
+                        <button id="btn-download-template-siswa" type="button" class="btn btn-dark" style="margin-bottom: 15px; width: auto; font-size: 0.8rem; padding: 8px 12px;">⬇️ Download Template CSV Lengkap</button>
+                        
                         <input type="file" id="file-csv" accept=".csv" style="background: #fff; margin-bottom: 10px;">
-                        <button id="btn-import-csv" class="btn btn-success">⬆ Mulai Import Ribuan Siswa</button>
+                        <button id="btn-import-csv" class="btn btn-success">⬆ Mulai Import Siswa</button>
                         <p id="status-import" style="font-size: 0.85rem; font-weight: bold; margin-top: 15px;"></p>
                     </div>
                 </div>
@@ -118,7 +122,18 @@
 
             <div id="page-master" class="page-section">
                 <div class="grid-3">
-                    <div class="card"><div class="card-header"><h3>🗓 Tahun Ajaran</h3></div><form id="form-tapel"><label>Tahun Ajaran</label><input type="text" id="nama_tapel" required><label>Semester</label><select id="smt_tapel" required><option value="1">Ganjil (1)</option><option value="2">Genap (2)</option></select><button type="submit" class="btn btn-dark">Simpan Tahun</button></form></div>
+                    <div class="card">
+                        <div class="card-header"><h3>🗓 Tahun Ajaran</h3></div>
+                        <form id="form-tapel">
+                            <label>Tahun Ajaran</label><input type="text" id="nama_tapel" placeholder="Cth: 2024/2025" required>
+                            <label>Semester</label><select id="smt_tapel" required><option value="1">Ganjil (1)</option><option value="2">Genap (2)</option></select>
+                            
+                            <label>Tanggal Cetak Rapor (Muncul di Rapor)</label>
+                            <input type="text" id="tgl_cetak_admin" placeholder="Cth: 20 Desember 2024" required>
+                            
+                            <button type="submit" class="btn btn-dark">Simpan Tahun</button>
+                        </form>
+                    </div>
                     <div class="card"><div class="card-header"><h3>🚪 Data Kelas & Wali Kelas</h3></div><form id="form-kelas"><label>Nama Kelas</label><input type="text" id="nama_kelas" required><label>Tingkat (Angka)</label><select id="tingkat_kelas" required><option value="7">Tingkat 7</option><option value="8">Tingkat 8</option><option value="9">Tingkat 9</option></select><label>Wali Kelas (Opsional)</label><select id="walas_id"><option value="">- Pilih Wali Kelas -</option></select><button type="submit" class="btn btn-dark">Simpan Kelas</button></form></div>
                     <div class="card"><div class="card-header"><h3>📚 Mata Pelajaran</h3></div><form id="form-mapel"><label>Kode Mapel</label><input type="text" id="kode_mapel" required><label>Nama Lengkap Mapel</label><input type="text" id="nama_mapel" required><button type="submit" class="btn btn-dark">Simpan Mapel</button></form></div>
                     <div class="card" style="border-top: 3px solid var(--warning);"><div class="card-header"><h3 style="color: #b45309;">⚽ Ekstrakurikuler</h3></div><form id="form-ekskul"><label>Nama Ekstrakurikuler</label><input type="text" id="nama_ekskul" required><label>Pembina Ekskul (Guru)</label><select id="pembina_id" required><option value="">- Memuat... -</option></select><button type="submit" class="btn btn-warning">Simpan Ekstrakurikuler</button></form></div>
@@ -142,10 +157,8 @@
                     <div class="card-header"><h3 style="color: var(--danger);">🌟 Set Proyek P5 Baru</h3></div>
                     <form id="form-proyek-p5">
                         <label>Nama Proyek</label><input type="text" id="nama_proyek" placeholder="Cth: Suara Demokrasi Pemilihan OSIS" required>
-                        
                         <label>Deskripsi Tujuan Proyek (Muncul di Rapor)</label>
-                        <textarea id="deskripsi_proyek" rows="3" placeholder="Contoh: Proyek ini diharapkan membangun karakter siswa dalam menyuarakan pendapat..." required></textarea>
-
+                        <textarea id="deskripsi_proyek" rows="3" placeholder="Contoh: Proyek ini diharapkan membangun karakter siswa..." required></textarea>
                         <div style="display: flex; gap: 15px;">
                             <div style="flex: 1;"><label>Tema P5</label><select id="tema_proyek" required><option value="Gaya Hidup Berkelanjutan">Gaya Hidup Berkelanjutan</option><option value="Kearifan Lokal">Kearifan Lokal</option><option value="Bhinneka Tunggal Ika">Bhinneka Tunggal Ika</option><option value="Bangunlah Jiwa dan Raganya">Bangunlah Jiwa dan Raganya</option><option value="Suara Demokrasi">Suara Demokrasi</option><option value="Rekayasa dan Teknologi">Rekayasa dan Teknologi</option><option value="Kewirausahaan">Kewirausahaan</option></select></div>
                             <div style="flex: 1;"><label>Tahun Ajaran</label><select id="p5_tahun_ajaran" required><option value="">- Memuat... -</option></select></div>
@@ -164,12 +177,6 @@
                         <button class="btn btn-primary" style="height: 38px; margin-top: 0;" onclick="loadSiswaCetakAdmin()">🔍 Tampilkan Data</button>
                     </div>
                     <div id="area-cetak-admin" style="display: none; animation: fadeIn 0.4s ease;">
-                        <div class="grid-2">
-                            <div class="card" style="background: #f0fdf4; border: 1px solid #10b981; margin-bottom: 0;">
-                                <h3 style="color: #047857; margin-top: 0; font-size: 1.1rem;">📊 Download Leger Kelas</h3>
-                                <button class="btn btn-success" style="margin-top: 10px;" onclick="downloadLegerAdmin()">📥 Download Leger (.csv)</button>
-                            </div>
-                        </div>
                         <h4 style="margin-top: 30px; margin-bottom: 10px; color: var(--text-main);">Cetak Dokumen Per Siswa</h4>
                         <div style="overflow-x: auto;">
                             <table id="tabel-cetak">
@@ -225,28 +232,89 @@
 
         document.getElementById('form-role').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('select-user').value; const checkboxes = document.querySelectorAll('input[name="role_cek"]:checked'); let selectedRoles = []; checkboxes.forEach(cb => selectedRoles.push(cb.value)); if (selectedRoles.length === 0) return alert("⚠️ Pilih minimal satu hak akses!"); const btn = e.target.querySelector('button'); btn.textContent = 'Memproses...'; const { error } = await supabase.from('profiles').update({ roles: selectedRoles }).eq('id', id); if (error) alert("Error: " + error.message); else { alert("✅ Hak Akses berhasil diperbarui!"); loadUsers(); } btn.textContent = '💾 Update Hak Akses'; });
         document.getElementById('form-siswa').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('siswa').insert([{ nisn: document.getElementById('nisn').value, nama_lengkap: document.getElementById('nama_siswa').value, jenis_kelamin: document.getElementById('jk_siswa').value, agama: document.getElementById('agama_siswa').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } });
-        document.getElementById('btn-import-csv').addEventListener('click', async () => { const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses...'; Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; for (let row of results.data) { try { if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([{ nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase(), agama: row.agama || 'Islam' }]).select('id').single(); if (err) { gagal++; continue; } if (kelasTujuan && siswaBaru) await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); sukses++; } catch (e) { gagal++; } } statusText.style.color = 'green'; statusText.textContent = `✅ Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; loadDataPlotting(); } }); });
+        
+        // --- DOWNLOAD TEMPLATE CSV LENGKAP ---
+        document.getElementById('btn-download-template-siswa').addEventListener('click', () => {
+            const header = ["nisn", "nama", "jk", "agama", "tempat_lahir", "tanggal_lahir", "status_keluarga", "anak_ke", "alamat_siswa", "no_telp_siswa", "sekolah_asal", "nama_ayah", "nama_ibu", "alamat_ortu", "no_telp_ortu", "pekerjaan_ayah", "pekerjaan_ibu", "nama_wali", "pekerjaan_wali", "alamat_wali", "kelas"];
+            const csvData = header.join(",") + "\n" + "12345678,Budi Santoso,L,Islam,Makassar,2008-12-30,Anak Kandung,1,Jl. Pettarani,081234567,SDN 1,Pak Santoso,Ibu Ana,Jl. Pettarani,081234567,PNS,Ibu Rumah Tangga,,,,-,7A";
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Template_Import_Siswa_Lengkap.csv";
+            link.click();
+        });
+
+        // --- IMPORT CSV LENGKAP ---
+        document.getElementById('btn-import-csv').addEventListener('click', async () => { 
+            const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); 
+            if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses...'; 
+            
+            Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { 
+                const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; 
+                
+                for (let row of results.data) { 
+                    try { 
+                        if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } 
+                        const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); 
+                        
+                        // Payload lengkap sesuai database
+                        const payloadSiswa = { 
+                            nisn: row.nisn, 
+                            nama_lengkap: row.nama, 
+                            jenis_kelamin: row.jk.toUpperCase(), 
+                            agama: row.agama || 'Islam',
+                            tempat_lahir: row.tempat_lahir || null,
+                            tanggal_lahir: row.tanggal_lahir || null,
+                            status_keluarga: row.status_keluarga || 'Anak Kandung',
+                            anak_ke: row.anak_ke || null,
+                            alamat_siswa: row.alamat_siswa || null,
+                            no_telp_siswa: row.no_telp_siswa || null,
+                            sekolah_asal: row.sekolah_asal || null,
+                            nama_ayah: row.nama_ayah || null,
+                            nama_ibu: row.nama_ibu || null,
+                            alamat_ortu: row.alamat_ortu || null,
+                            no_telp_ortu: row.no_telp_ortu || null,
+                            pekerjaan_ayah: row.pekerjaan_ayah || null,
+                            pekerjaan_ibu: row.pekerjaan_ibu || null,
+                            nama_wali: row.nama_wali || null,
+                            pekerjaan_wali: row.pekerjaan_wali || null,
+                            alamat_wali: row.alamat_wali || null
+                        };
+
+                        const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([payloadSiswa]).select('id').single(); 
+                        if (err) { gagal++; continue; } 
+                        
+                        if (kelasTujuan && siswaBaru) {
+                            await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); 
+                        }
+                        sukses++; 
+                    } catch (e) { gagal++; } 
+                } 
+                statusText.style.color = 'green'; statusText.textContent = `✅ Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; 
+                loadDataPlotting(); 
+            } }); 
+        });
+
         document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => { e.preventDefault(); const kelasId = document.getElementById('plot_kelas').value; const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked'); if (checkboxes.length === 0) return alert("⚠️ Centang minimal satu siswa!"); let errorCount = 0; for (let cb of checkboxes) { const { error } = await supabase.from('anggota_kelas').insert([{ siswa_id: cb.value, kelas_id: kelasId }]); if (error && error.code !== '23505') errorCount++; } if (errorCount > 0) alert(`⚠️ Ada ${errorCount} data gagal disimpan.`); else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } });
-        document.getElementById('form-tapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('tahun_ajaran').insert([{ nama: document.getElementById('nama_tapel').value, semester: document.getElementById('smt_tapel').value, is_active: true }]); alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); });
+        
+        // --- SIMPAN TAHUN AJARAN DENGAN TANGGAL CETAK ---
+        document.getElementById('form-tapel').addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            await supabase.from('tahun_ajaran').insert([{ 
+                nama: document.getElementById('nama_tapel').value, 
+                semester: document.getElementById('smt_tapel').value, 
+                tanggal_cetak: document.getElementById('tgl_cetak_admin').value, // Simpan tanggal cetak ke DB
+                is_active: true 
+            }]); 
+            alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); 
+        });
+
         document.getElementById('form-kelas').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('kelas').insert([{ nama_kelas: document.getElementById('nama_kelas').value, tingkat: document.getElementById('tingkat_kelas').value, wali_kelas_id: document.getElementById('walas_id').value || null }]); alert("✅ Kelas & Wali Kelas Tersimpan!"); e.target.reset(); loadDataPlotting(); });
         document.getElementById('form-mapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('mata_pelajaran').insert([{ kode_mapel: document.getElementById('kode_mapel').value, nama_mapel: document.getElementById('nama_mapel').value }]); alert("✅ Tersimpan!"); e.target.reset(); });
         document.getElementById('form-ekskul').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('ekstrakurikuler').insert([{ nama_ekskul: document.getElementById('nama_ekskul').value, pembina_id: document.getElementById('pembina_id').value }]); if(error) alert("Error: " + error.message); else { alert("✅ Ekstrakurikuler tersimpan!"); e.target.reset(); }});
-        
-        // --- SIMPAN PROYEK P5 + DESKRIPSI TEMA ---
-        document.getElementById('form-proyek-p5').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            const { error } = await supabase.from('proyek_p5').insert([{ 
-                nama_proyek: document.getElementById('nama_proyek').value, 
-                deskripsi_proyek: document.getElementById('deskripsi_proyek').value, // Simpan ke Supabase
-                tema: document.getElementById('tema_proyek').value, 
-                koordinator_id: document.getElementById('koordinator_id').value, 
-                tahun_ajaran_id: document.getElementById('p5_tahun_ajaran').value 
-            }]); 
-            if (error) alert("Error: " + error.message); else { alert("✅ Proyek P5 dibuat!"); e.target.reset(); } 
-        });
+        document.getElementById('form-proyek-p5').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('proyek_p5').insert([{ nama_proyek: document.getElementById('nama_proyek').value, deskripsi_proyek: document.getElementById('deskripsi_proyek').value, tema: document.getElementById('tema_proyek').value, koordinator_id: document.getElementById('koordinator_id').value, tahun_ajaran_id: document.getElementById('p5_tahun_ajaran').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Proyek P5 dibuat!"); e.target.reset(); } });
 
         window.loadSiswaCetakAdmin = async () => { const kelasId = document.getElementById('filter-kelas-cetak').value; const tbody = document.getElementById('tbody-cetak'); if(!kelasId) return alert("Pilih Kelas terlebih dahulu!"); document.getElementById('area-cetak-admin').style.display = 'block'; tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>'; const { data: anggota } = await supabase.from('anggota_kelas').select(`id, siswa(nama_lengkap, nisn)`).eq('kelas_id', kelasId); if(!anggota || anggota.length === 0) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Tidak ada siswa di kelas ini.</td></tr>'; tbody.innerHTML = ''; anggota.forEach((a, index) => { tbody.innerHTML += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:center;">${a.siswa.nisn}</td><td style="font-weight: 500;">${a.siswa.nama_lengkap}</td><td style="text-align:center;"><button type="button" class="btn btn-dark" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin:0 5px 0 0;" onclick="window.open('cetak_akademik.html?id=${a.id}', '_blank')">📄 Akademik</button><button type="button" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem; width: auto; margin:0;" onclick="window.open('cetak_p5.html?id=${a.id}', '_blank')">🌟 P5</button></td></tr>`; }); };
-        window.downloadLegerAdmin = async () => { /* Logika leger disembunyikan untuk menyingkat tempat */ };
 
         init();
     </script>
