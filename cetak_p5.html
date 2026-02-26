@@ -228,7 +228,12 @@
             }
 
             // 3. Tanda Tangan dan Tanggal
-            document.getElementById('tgl_cetak').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            const { data: tapelTerbaru } = await supabase.from('tahun_ajaran').select('tanggal_cetak').order('id', { ascending: false }).limit(1).single();
+                if(tapelTerbaru && tapelTerbaru.tanggal_cetak) {
+                    document.getElementById('tgl_cetak').textContent = tapelTerbaru.tanggal_cetak;
+                } else {
+                    document.getElementById('tgl_cetak').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                }
 
             const session = await checkSession();
             if (session) {
@@ -247,3 +252,4 @@
     </script>
 </body>
 </html>
+
