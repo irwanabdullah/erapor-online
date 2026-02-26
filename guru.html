@@ -117,7 +117,7 @@
                         <div style="display: flex; gap: 10px;">
                             <button class="btn btn-primary" onclick="loadSiswaWalas()">🔍 Tampilkan Siswa</button>
                             <button class="btn btn-success" onclick="downloadLegerKelas()">📊 Download Leger (Excel)</button>
-                            <button class="btn btn-warning" onclick="prosesKenaikanKelas()">🎓 Proses Kenaikan/Lulus</button>
+                            <button class="btn btn-warning" id="btn-kenaikan-kelas" onclick="prosesKenaikanKelas()" style="display: none;">🎓 Proses Kenaikan/Lulus</button>
                         </div>
                     </div>
                 </div>
@@ -211,6 +211,13 @@
         document.getElementById('form-profil').addEventListener('submit', async (e) => { e.preventDefault(); const btn = document.getElementById('btn-simpan-profil'); btn.textContent = 'Menyimpan...'; btn.disabled = true; const namaBaru = document.getElementById('prof_nama').value; const nipBaru = document.getElementById('prof_nip').value; const { error } = await supabase.from('profiles').update({ full_name: namaBaru, nip: nipBaru }).eq('id', guruId); if (error) alert("Gagal menyimpan: " + error.message); else { alert("✅ Profil berhasil diupdate!"); document.getElementById('user-info').textContent = `Halo, ${namaBaru}`; } btn.textContent = '💾 Simpan Profil'; btn.disabled = false; });
 
         async function loadMasterDropdowns() {
+            // Deteksi Semester Aktif
+            const { data: tapelTerbaru } = await supabase.from('tahun_ajaran').select('*').order('id', { ascending: false }).limit(1).single();
+            if (tapelTerbaru && tapelTerbaru.semester == '2') {
+                const btnKenaikan = document.getElementById('btn-kenaikan-kelas');
+                if(btnKenaikan) btnKenaikan.style.display = 'inline-block'; // Munculkan tombol jika Genap
+            }
+
             const { data: kelasSemua } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
             document.querySelectorAll('.kelas-dropdown').forEach(select => { if(select.id !== 'wl_kelas' && kelasSemua) { kelasSemua.forEach(k => select.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); } });
             if (userRoles.includes('wali_kelas') || userRoles.includes('admin')) { let query = supabase.from('kelas').select('id, nama_kelas').order('nama_kelas'); if (!userRoles.includes('admin')) query = query.eq('wali_kelas_id', guruId); const { data: kelasBinaan } = await query; const selWalas = document.getElementById('wl_kelas'); if (kelasBinaan && kelasBinaan.length > 0) { kelasBinaan.forEach(k => selWalas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`); } else { selWalas.innerHTML = '<option value="">(Belum ditugaskan di kelas manapun)</option>'; } }
@@ -404,3 +411,4 @@
     </script>
 </body>
 </html>
+
