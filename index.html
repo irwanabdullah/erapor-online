@@ -255,6 +255,13 @@
                     </div>
                 </div>
 
+                <div style="margin-bottom: 15px;">
+                    <label for="login_tapel" style="display: block; font-weight: bold; margin-bottom: 5px;">Tahun Pelajaran & Semester</label>
+                    <select id="login_tapel" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                        <option value="">Memuat data...</option>
+                    </select>
+                </div>
+
                 <button type="submit" id="btn-login" class="btn-login">Masuk ke Portal</button>
             </form>
 
@@ -265,6 +272,31 @@
     </div>
 
     <script type="module">
+        import { supabase } from './app.js'; // Pastikan path ini sesuai dengan file Anda
+        
+        // Fungsi untuk menarik data Tahun Ajaran ke Dropdown Login
+        async function loadTapelLogin() {
+            // Kita urutkan dari yang terbaru (descending) agar otomatis berada di paling atas
+            const { data, error } = await supabase.from('tahun_ajaran').select('*').order('id', { ascending: false });
+            
+            const selectTapel = document.getElementById('login_tapel');
+            
+            if (data && data.length > 0) {
+                selectTapel.innerHTML = ''; // Kosongkan teks "Memuat data..."
+                
+                data.forEach(t => {
+                    let namaSemester = t.semester == '1' ? 'Ganjil' : 'Genap';
+                    // Value-nya adalah ID, teks yang tampil adalah "2024/2025 - Semester Ganjil"
+                    selectTapel.innerHTML += `<option value="${t.id}">${t.nama} - Semester ${namaSemester}</option>`;
+                });
+            } else {
+                selectTapel.innerHTML = '<option value="">Belum ada data Tahun Pelajaran</option>';
+            }
+        }
+        
+        // Jalankan fungsi saat halaman dimuat
+        loadTapelLogin();
+                
         // Pastikan Anda sudah mengatur file app.js Anda dengan benar
         import { supabase } from './app.js'
 
@@ -337,4 +369,5 @@
     </script>
 </body>
 </html>
+
 
