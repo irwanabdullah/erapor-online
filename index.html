@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Portal e-Rapor Kurikulum Merdeka</title>
+    <title>Login | e-Rapor Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,362 +12,176 @@
             --bg-color: #f3f4f6;
             --text-main: #1f2937;
             --text-muted: #6b7280;
+            --border-color: #e5e7eb;
             --white: #ffffff;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color); color: var(--text-main);
+            display: flex; height: 100vh; justify-content: center; align-items: center;
         }
 
-        .login-wrapper {
-            display: flex;
-            width: 1000px;
-            height: 600px;
+        .login-container {
             background: var(--white);
-            border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-        }
-
-        /* --- SISI KIRI (BRANDING) --- */
-        .login-left {
-            flex: 1;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            color: var(--white);
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-left::before {
-            content: "";
-            position: absolute;
-            top: -50px; left: -50px; width: 200px; height: 200px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-
-        .login-left::after {
-            content: "";
-            position: absolute;
-            bottom: -100px; right: -50px; width: 300px; height: 300px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-        }
-
-        .brand-logo {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            z-index: 1;
-        }
-
-        .brand-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin: 0 0 15px 0;
-            line-height: 1.2;
-            z-index: 1;
-        }
-
-        .brand-subtitle {
-            font-size: 1rem;
-            font-weight: 300;
-            opacity: 0.9;
-            line-height: 1.6;
-            z-index: 1;
-        }
-
-        /* --- SISI KANAN (FORM LOGIN) --- */
-        .login-right {
-            flex: 1;
-            padding: 60px 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
         }
 
         .login-header {
-            margin-bottom: 40px;
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .login-header h2 {
-            margin: 0 0 8px 0;
-            font-size: 1.8rem;
-            color: var(--text-main);
+        .login-header h1 {
+            margin: 0; font-size: 1.5rem; color: var(--primary);
         }
 
         .login-header p {
-            margin: 0;
-            color: var(--text-muted);
-            font-size: 0.95rem;
+            margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted);
         }
 
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 8px;
+        label {
+            font-size: 0.85rem; font-weight: 600; color: var(--text-main);
+            display: block; margin-bottom: 8px;
         }
 
-        .form-control {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-            background-color: #f9fafb;
+        input[type="email"], input[type="password"], select {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.95rem; font-family: 'Inter', sans-serif;
+            background: #f9fafb; transition: 0.2s; box-sizing: border-box;
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: var(--white);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        }
-
-        /* --- TAMBAHAN UNTUK MATA PASSWORD --- */
-        .password-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .password-wrapper .form-control {
-            padding-right: 45px; /* Memberi ruang agar teks tidak tertutup ikon */
-        }
-
-        .btn-toggle-password {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            transition: opacity 0.2s ease;
-            opacity: 0.6;
-        }
-
-        .btn-toggle-password:hover {
-            opacity: 1;
+        input:focus, select:focus {
+            border-color: var(--primary); outline: 0; background: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .btn-login {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--primary);
-            color: var(--white);
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 10px;
-            font-family: 'Inter', sans-serif;
+            width: 100%; padding: 12px; background-color: var(--primary);
+            color: white; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; font-size: 1rem; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; margin-top: 10px;
         }
 
-        .btn-login:hover {
-            background-color: var(--primary-dark);
-        }
+        .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
+        .btn-login:disabled { background-color: #93c5fd; cursor: not-allowed; transform: none; }
 
-        .btn-login:disabled {
-            background-color: #93c5fd;
-            cursor: not-allowed;
-        }
-
-        .footer-text {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* Responsive Design untuk Layar Kecil/HP */
-        @media (max-width: 900px) {
-            .login-wrapper {
-                flex-direction: column;
-                width: 90%;
-                height: auto;
-                min-height: 80vh;
-            }
-            .login-left {
-                padding: 40px 30px;
-                text-align: center;
-            }
-            .login-right {
-                padding: 40px 30px;
-            }
-        }
     </style>
 </head>
 <body>
 
-    <div class="login-wrapper">
-        <div class="login-left">
-            <div class="brand-logo">🏫</div>
-            <h1 class="brand-title">Portal<br>e-Rapor<br>Kurikulum Merdeka</h1>
-            <p class="brand-subtitle">Sistem Informasi Akademik dan Penilaian Terpadu. Kelola nilai formatif, sumatif, hingga Proyek P5 dengan mudah, cepat, dan akurat.</p>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>e-Rapor Online</h1>
+            <p>Silakan masuk menggunakan akun Anda</p>
         </div>
 
-        <div class="login-right">
-            <div class="login-header">
-                <h2>Selamat Datang</h2>
-                <p>Silakan masukkan kredensial akun Anda.</p>
+        <form id="form-login">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="nama@sekolah.com" required>
             </div>
 
-            <form id="form-login">
-                <div class="form-group">
-                    <label for="email">Email Pengguna</label>
-                    <input type="email" id="email" class="form-control" placeholder="contoh: guru@sekolah.sch.id" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Kata Sandi (Password)</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-                        <button type="button" id="toggle-password" class="btn-toggle-password" title="Tampilkan sandi">
-                            👁️
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 15px;">
-                    <label for="login_tapel" style="display: block; font-weight: bold; margin-bottom: 5px;">Tahun Pelajaran & Semester</label>
-                    <select id="login_tapel" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-                        <option value="">Memuat data...</option>
-                    </select>
-                </div>
-
-                <button type="submit" id="btn-login" class="btn-login">Masuk ke Portal</button>
-            </form>
-
-            <div class="footer-text">
-                &copy; 2026 Hak Cipta Dilindungi.<br>Sistem e-Rapor Internal Sekolah.
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label for="login_tapel">Pilih Tahun Ajaran & Semester</label>
+                <select id="login_tapel" required>
+                    <option value="">⏳ Memuat data dari server...</option>
+                </select>
+            </div>
+
+            <button type="submit" id="btn-login" class="btn-login">Masuk ke Sistem</button>
+        </form>
     </div>
 
     <script type="module">
-        import { supabase } from './app.js'; // Pastikan path ini sesuai dengan file Anda
-        
-        // Fungsi untuk menarik data Tahun Ajaran ke Dropdown Login
+        import { supabase } from './app.js' // Pastikan file app.js Anda ada di folder yang sama
+
+        // 1. Fungsi untuk menarik data Tahun Ajaran ke Dropdown
         async function loadTapelLogin() {
-            // Kita urutkan dari yang terbaru (descending) agar otomatis berada di paling atas
+            // Urutkan dari yang paling baru (ID terbesar)
             const { data, error } = await supabase.from('tahun_ajaran').select('*').order('id', { ascending: false });
             
             const selectTapel = document.getElementById('login_tapel');
             
             if (data && data.length > 0) {
-                selectTapel.innerHTML = ''; // Kosongkan teks "Memuat data..."
+                selectTapel.innerHTML = ''; // Kosongkan tulisan "Memuat..."
                 
                 data.forEach(t => {
                     let namaSemester = t.semester == '1' ? 'Ganjil' : 'Genap';
-                    // Value-nya adalah ID, teks yang tampil adalah "2024/2025 - Semester Ganjil"
                     selectTapel.innerHTML += `<option value="${t.id}">${t.nama} - Semester ${namaSemester}</option>`;
                 });
             } else {
-                selectTapel.innerHTML = '<option value="">Belum ada data Tahun Pelajaran</option>';
+                selectTapel.innerHTML = '<option value="">(Belum ada data Tahun Ajaran)</option>';
             }
         }
-        
-        // Jalankan fungsi saat halaman dimuat
+
+        // Jalankan fungsi load data saat halaman dibuka
         loadTapelLogin();
-                
-        // Pastikan Anda sudah mengatur file app.js Anda dengan benar
-        import { supabase } from './app.js'
 
-        // Fungsi cek sesi (Jika sudah login, langsung lempar ke dalam agar tidak usah login ulang)
-        async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                redirectUser(session.user.id);
-            }
-        }
-
-        // Fungsi Redirect Cerdas Berdasarkan Jabatan/Role
-        async function redirectUser(userId) {
-            const { data: profile } = await supabase.from('profiles').select('roles').eq('id', userId).single();
-            
-            // Jika dia punya role admin, lempar ke admin.html
-            if (profile && profile.roles && profile.roles.includes('admin')) {
-                window.location.replace('admin.html');
-            } else {
-                // Selain admin (Guru, Walas, dll), lempar ke guru.html
-                window.location.replace('guru.html');
-            }
-        }
-
-        // Fitur Tampil/Sembunyi Password (Ikon Mata)
-        const togglePassword = document.getElementById('toggle-password');
-        const passwordInput = document.getElementById('password');
-
-        togglePassword.addEventListener('click', function () {
-            // Cek apakah tipe input saat ini password atau text
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Ubah ikon mata (terbuka 👁️ / tertutup 🙈)
-            this.textContent = type === 'password' ? '👁️' : '🙈';
-        });
-
-        // Event Listener Tombol Login
+        // 2. Fungsi Proses Login
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const btn = document.getElementById('btn-login');
+            btn.textContent = 'Memeriksa Akun...';
+            btn.disabled = true;
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btnLogin = document.getElementById('btn-login');
+            const tapelDropdown = document.getElementById('login_tapel');
+            
+            const selectedTapelId = tapelDropdown.value;
+            const selectedTapelText = tapelDropdown.options[tapelDropdown.selectedIndex]?.text;
 
-            // Ubah tombol jadi status loading
-            btnLogin.innerHTML = '⏳ Memverifikasi Data...';
-            btnLogin.disabled = true;
+            // Pastikan Tahun Ajaran sudah dipilih
+            if (!selectedTapelId) {
+                alert("⚠️ Sistem tidak mendeteksi Tahun Ajaran. Hubungi Admin.");
+                btn.textContent = 'Masuk ke Sistem';
+                btn.disabled = false;
+                return;
+            }
 
-            // Proses Login ke Supabase
+            // Eksekusi Login dengan Supabase
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
             });
 
             if (error) {
-                // Jika gagal (salah password/email)
-                alert("⚠️ Login Gagal! Periksa kembali email dan kata sandi Anda.\n\nPesan sistem: " + error.message);
-                btnLogin.innerHTML = 'Masuk ke Portal';
-                btnLogin.disabled = false;
+                alert("❌ Login Gagal: Email atau Password salah.");
+                btn.textContent = 'Masuk ke Sistem';
+                btn.disabled = false;
             } else {
-                // Jika berhasil, panggil fungsi redirect cerdas
-                btnLogin.innerHTML = '✅ Berhasil! Mengalihkan...';
-                redirectUser(data.user.id);
+                // LOGIN BERHASIL: Simpan pilihan semester ke "Ingatan Browser" (Local Storage)
+                localStorage.setItem('aktif_tapel_id', selectedTapelId);
+                localStorage.setItem('aktif_tapel_nama', selectedTapelText);
+
+                // Cek Jabatan (Role) untuk menentukan dia masuk ke Panel Admin atau Guru
+                const { data: profile } = await supabase.from('profiles').select('roles').eq('id', data.user.id).single();
+                
+                if (profile && profile.roles && profile.roles.includes('admin')) {
+                    // Jika dia admin, arahkan ke admin.html
+                    window.location.replace('admin.html');
+                } else {
+                    // Jika guru/wali kelas/dll, arahkan ke guru.html
+                    window.location.replace('guru.html');
+                }
             }
         });
-
-        // Jalankan cek sesi saat halaman pertama dibuka
-        checkExistingSession();
     </script>
 </body>
 </html>
-
-
