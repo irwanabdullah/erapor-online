@@ -19,7 +19,7 @@
             padding: 0;
             color: #000;
             font-size: 11pt;
-            line-height: 1.5;
+            line-height: 1.3; /* Diubah dari 1.5 agar lebih rapat dan muat 1 halaman */
         }
 
         /* Kelas untuk memisahkan setiap halaman (Page Break) */
@@ -27,7 +27,7 @@
             page-break-after: always;
             position: relative;
             min-height: 25cm;
-            padding: 1cm 0;
+            padding: 0.5cm 0; /* Diubah dari 1cm agar menghemat ruang vertikal */
             box-sizing: border-box;
         }
 
@@ -59,7 +59,7 @@
         .section-title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 10px; text-decoration: underline;}
         
         table.table-no-border { width: 100%; border-collapse: collapse; }
-        table.table-no-border td { padding: 4px 0; vertical-align: top; }
+        table.table-no-border td { padding: 2px 0; vertical-align: top; } /* Diubah dari 4px menjadi 2px */
         table.table-no-border td:first-child { width: 35%; }
         table.table-no-border td:nth-child(2) { width: 3%; text-align: center; }
 
@@ -166,7 +166,7 @@
             <tr><td>18. Pekerjaan Wali Peserta Didik</td><td>:</td><td id="bio-kerja-wali">-</td></tr>
         </table>
 
-        <table style="width: 100%; margin-top: 50px;">
+        <table style="width: 100%; margin-top: 15px;">
             <tr>
                 <td style="width: 10%; text-align: center;">
                     <div style="width: 3cm; height: 4cm; border: 1px solid #000; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
@@ -252,7 +252,7 @@
         import { supabase } from './app.js'
 
         async function init() {
-            // Ambil ID siswa dari URL (misal: cetak_sampul.html?id=123)
+            // Ambil ID siswa dari URL
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
 
@@ -261,7 +261,6 @@
                 return;
             }
 
-            // Ambil data dari tabel anggota_kelas, lalu gabungkan dengan tabel siswa
             const { data: anggota, error } = await supabase
                 .from('anggota_kelas')
                 .select(`id, siswa(*)`)
@@ -275,29 +274,16 @@
 
             const siswa = anggota.siswa;
 
-            // Masukkan data ke Halaman Cover
             document.getElementById('cover-nama-siswa').textContent = siswa.nama_lengkap || '-';
             document.getElementById('cover-nisn').textContent = `${siswa.nisn || '-'} / -`;
 
-            // Masukkan data ke Biodata (Halaman 3)
             document.getElementById('bio-nama').textContent = siswa.nama_lengkap || '-';
             document.getElementById('bio-nisn').textContent = siswa.nisn || '-';
             document.getElementById('bio-jk').textContent = siswa.jenis_kelamin === 'L' ? 'Laki-Laki' : (siswa.jenis_kelamin === 'P' ? 'Perempuan' : '-');
             document.getElementById('bio-agama').textContent = siswa.agama || '-';
             
-            // Masukkan data ke Mutasi (Halaman 4 & 5)
             document.getElementById('mutasi-nama-keluar').textContent = siswa.nama_lengkap || '-';
             document.getElementById('mutasi-nama-masuk').textContent = siswa.nama_lengkap || '-';
-
-            /* ==========================================================
-               PENTING:
-               Karena saat ini di database Supabase Anda tabel `siswa` 
-               baru memiliki kolom (nisn, nama_lengkap, jenis_kelamin, agama),
-               maka data lainnya masih kosong. 
-               
-               Jika Anda sudah menambahkan kolom-kolom baru di Supabase, 
-               Anda bisa menghapus tanda komentar (//) pada kode di bawah ini:
-            ========================================================== */
             
             document.getElementById('bio-ttl').textContent = `${siswa.tempat_lahir || '-'}, ${siswa.tanggal_lahir || '-'}`;
             document.getElementById('bio-status').textContent = siswa.status_keluarga || 'Anak Kandung';
@@ -316,11 +302,4 @@
         init();
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
