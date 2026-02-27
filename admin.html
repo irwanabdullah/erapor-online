@@ -6,7 +6,6 @@
     <title>Dasbor Admin | e-Rapor Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #2563eb; --primary-dark: #1d4ed8; --sidebar-bg: #1e3a8a; --sidebar-hover: #3b82f6; --bg-color: #f3f4f6; --text-main: #1f2937; --text-muted: #6b7280; --border-color: #e5e7eb; --white: #ffffff; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
@@ -76,8 +75,17 @@
 
                 <div class="card" style="max-width: 700px; border-top: 3px solid var(--success);">
                     <div class="card-header"><h3 style="color: var(--success);">💾 Backup Database Total</h3></div>
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Unduh seluruh data sekolah (Data Siswa, Kelas, Mata Pelajaran, hingga Nilai) ke dalam satu file Excel (.xlsx) bersusun. Gunakan fitur ini secara berkala sebagai arsip cadangan.</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Unduh seluruh data sekolah (Data Siswa, Kelas, Mapel, hingga Nilai) ke dalam satu file Excel (.xlsx) bersusun. Gunakan secara berkala sebagai arsip cadangan.</p>
                     <button id="btn-backup-db" class="btn btn-success" style="width: auto; padding: 12px 20px; font-size: 0.95rem;">⬇️ Mulai Download Backup (Excel)</button>
+                </div>
+
+                <div class="card" style="max-width: 700px; border-top: 3px solid var(--danger);">
+                    <div class="card-header"><h3 style="color: var(--danger);">🔒 Kunci Akses Pengisian Nilai</h3></div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Gunakan fitur ini saat masa cetak rapor berlangsung. Jika dikunci, guru hanya bisa melihat data dan tidak bisa menambah/mengubah nilai.</p>
+                    <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
+                        <span id="status-kunci-badge" style="padding: 8px 15px; border-radius: 6px; font-weight: bold; background: #e5e7eb; color: #374151;">⏳ Memuat Status...</span>
+                        <button id="btn-toggle-kunci" class="btn btn-danger" style="width: auto; margin: 0; padding: 10px 20px; display: none;">🔒 Kunci Nilai Sekarang</button>
+                    </div>
                 </div>
             </div>
 
@@ -114,13 +122,10 @@
                             <button type="submit" class="btn btn-primary">➕ Simpan Siswa</button>
                         </form>
                     </div>
-
                     <div class="card" style="background: #f0fdf4; border: 1px dashed #10b981;">
                         <div class="card-header"><h3 style="color: #047857;">🚀 Import Data Siswa (Excel/CSV)</h3></div>
                         <p style="font-size: 0.85rem; color: #047857; margin-top: 0;">Gunakan template di bawah untuk memastikan nama kolom sesuai dengan database.</p>
-                        
                         <button id="btn-download-template-siswa" type="button" class="btn btn-dark" style="margin-bottom: 15px; width: auto; font-size: 0.8rem; padding: 8px 12px;">⬇️ Download Template CSV Lengkap</button>
-                        
                         <input type="file" id="file-csv" accept=".csv" style="background: #fff; margin-bottom: 10px;">
                         <button id="btn-import-csv" class="btn btn-success">⬆ Mulai Import Siswa</button>
                         <p id="status-import" style="font-size: 0.85rem; font-weight: bold; margin-top: 15px;"></p>
@@ -135,10 +140,7 @@
                         <form id="form-tapel">
                             <label>Tahun Ajaran</label><input type="text" id="nama_tapel" placeholder="Cth: 2024/2025" required>
                             <label>Semester</label><select id="smt_tapel" required><option value="1">Ganjil (1)</option><option value="2">Genap (2)</option></select>
-                            
-                            <label>Tanggal Cetak Rapor (Muncul di Rapor)</label>
-                            <input type="text" id="tgl_cetak_admin" placeholder="Cth: 20 Desember 2024" required>
-                            
+                            <label>Tanggal Cetak Rapor</label><input type="text" id="tgl_cetak_admin" placeholder="Cth: 20 Desember 2024" required>
                             <button type="submit" class="btn btn-dark">Simpan Tahun</button>
                         </form>
                     </div>
@@ -165,8 +167,7 @@
                     <div class="card-header"><h3 style="color: var(--danger);">🌟 Set Proyek P5 Baru</h3></div>
                     <form id="form-proyek-p5">
                         <label>Nama Proyek</label><input type="text" id="nama_proyek" placeholder="Cth: Suara Demokrasi Pemilihan OSIS" required>
-                        <label>Deskripsi Tujuan Proyek (Muncul di Rapor)</label>
-                        <textarea id="deskripsi_proyek" rows="3" placeholder="Contoh: Proyek ini diharapkan membangun karakter siswa..." required></textarea>
+                        <label>Deskripsi Tujuan Proyek</label><textarea id="deskripsi_proyek" rows="3" required></textarea>
                         <div style="display: flex; gap: 15px;">
                             <div style="flex: 1;"><label>Tema P5</label><select id="tema_proyek" required><option value="Gaya Hidup Berkelanjutan">Gaya Hidup Berkelanjutan</option><option value="Kearifan Lokal">Kearifan Lokal</option><option value="Bhinneka Tunggal Ika">Bhinneka Tunggal Ika</option><option value="Bangunlah Jiwa dan Raganya">Bangunlah Jiwa dan Raganya</option><option value="Suara Demokrasi">Suara Demokrasi</option><option value="Rekayasa dan Teknologi">Rekayasa dan Teknologi</option><option value="Kewirausahaan">Kewirausahaan</option></select></div>
                             <div style="flex: 1;"><label>Tahun Ajaran</label><select id="p5_tahun_ajaran" required><option value="">- Memuat... -</option></select></div>
@@ -207,172 +208,97 @@
         const navLinks = document.querySelectorAll('.nav-link'); const pages = document.querySelectorAll('.page-section'); const topbarTitle = document.getElementById('topbar-title');
         navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); navLinks.forEach(l => l.classList.remove('active')); e.target.classList.add('active'); topbarTitle.textContent = e.target.textContent.replace(/[^\w\s]/gi, '').trim(); pages.forEach(p => p.classList.remove('active')); document.getElementById(e.target.getAttribute('data-target')).classList.add('active'); }); });
 
-        async function init() { const session = await checkSession(); if (!session) return window.location.href = 'index.html'; loadUsers(); loadDataPlotting(); loadMasterDataDropdowns(); }
+        async function init() { 
+            const session = await checkSession(); if (!session) return window.location.href = 'index.html'; 
+            loadUsers(); loadDataPlotting(); loadMasterDataDropdowns(); 
+            loadLockStatus(); // Panggil fungsi kunci nilai saat halaman dimuat
+        }
+        
         document.getElementById('btn-logout').addEventListener('click', async () => { if(confirm("Apakah Anda yakin ingin keluar?")) { await supabase.auth.signOut(); window.location.replace('index.html'); } });
 
-        async function loadUsers() {
-            const selectUser = document.getElementById('select-user'); const selectKoordinator = document.getElementById('koordinator_id');
-            const selectPembina = document.getElementById('pembina_id'); const selectWalas = document.getElementById('walas_id');
-            const { data } = await supabase.from('profiles').select('id, full_name, roles').order('full_name');
-            if (data) {
-                allUsersData = data;
-                selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>'; selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>';
-                selectPembina.innerHTML = '<option value="">-- Pilih Pembina Ekskul --</option>'; selectWalas.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
-                data.forEach(user => {
-                    let roleString = user.roles ? user.roles.join(', ') : 'Belum Ada Role';
-                    selectUser.innerHTML += `<option value="${user.id}">${user.full_name} (${roleString})</option>`; selectKoordinator.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
-                    selectPembina.innerHTML += `<option value="${user.id}">${user.full_name}</option>`; if(user.roles && user.roles.includes('wali_kelas')) selectWalas.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
-                });
+        // --- FITUR KUNCI NILAI ---
+        let activeTapelId = null;
+        let isTapelLocked = false;
+
+        async function loadLockStatus() {
+            const { data } = await supabase.from('tahun_ajaran').select('id, is_locked').order('id', { ascending: false }).limit(1).single();
+            if(data) {
+                activeTapelId = data.id;
+                isTapelLocked = data.is_locked || false;
+                updateLockUI();
             }
         }
 
-        document.getElementById('select-user').addEventListener('change', (e) => { const userId = e.target.value; document.querySelectorAll('input[name="role_cek"]').forEach(cb => cb.checked = false); if (!userId) return; const user = allUsersData.find(u => u.id === userId); if (user && user.roles) user.roles.forEach(role => { const cb = document.querySelector(`input[name="role_cek"][value="${role}"]`); if (cb) cb.checked = true; }); });
-
-        async function loadDataPlotting() {
-            const plotKelas = document.getElementById('plot_kelas'); const listSiswa = document.getElementById('list-siswa'); const cetakKelas = document.getElementById('filter-kelas-cetak');
-            const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas');
-            if (kelas) { plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; cetakKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; kelas.forEach(k => { plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; cetakKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; }); }
-            const { data: siswa } = await supabase.from('siswa').select('id, nama_lengkap, nisn, agama').order('nama_lengkap');
-            if (siswa) { listSiswa.innerHTML = ''; siswa.forEach(s => { listSiswa.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="siswa_cek" value="${s.id}"> ${s.nama_lengkap} <span style="color:var(--text-muted); font-size:0.85rem;">(${s.nisn} - ${s.agama || 'Islam'})</span></label>`; }); }
+        function updateLockUI() {
+            const badge = document.getElementById('status-kunci-badge');
+            const btn = document.getElementById('btn-toggle-kunci');
+            btn.style.display = 'inline-block';
+            
+            if(isTapelLocked) {
+                badge.innerHTML = "Status: <b>TERKUNCI 🔒</b>";
+                badge.style.background = "#fee2e2"; badge.style.color = "#dc2626";
+                btn.textContent = "🔓 Buka Kunci Nilai"; btn.className = "btn btn-success";
+            } else {
+                badge.innerHTML = "Status: <b>TERBUKA 🔓</b>";
+                badge.style.background = "#dcfce7"; badge.style.color = "#16a34a";
+                btn.textContent = "🔒 Kunci Nilai Sekarang"; btn.className = "btn btn-danger";
+            }
         }
 
-        async function loadMasterDataDropdowns() { const selectTapel = document.getElementById('p5_tahun_ajaran'); const { data: tapel } = await supabase.from('tahun_ajaran').select('id, nama, semester').order('nama'); if (tapel) { selectTapel.innerHTML = '<option value="">-- Pilih Tahun Ajaran --</option>'; tapel.forEach(t => selectTapel.innerHTML += `<option value="${t.id}">${t.nama} (Smt ${t.semester})</option>`); } }
+        document.getElementById('btn-toggle-kunci').addEventListener('click', async () => {
+            if(!activeTapelId) return alert("Belum ada data Tahun Ajaran aktif!");
+            const action = isTapelLocked ? "membuka" : "mengunci";
+            if(!confirm(`Apakah Anda yakin ingin ${action} pengisian nilai untuk seluruh Guru?`)) return;
 
+            const btn = document.getElementById('btn-toggle-kunci');
+            btn.textContent = "Memproses..."; btn.disabled = true;
+
+            const { error } = await supabase.from('tahun_ajaran').update({ is_locked: !isTapelLocked }).eq('id', activeTapelId);
+            
+            if(error) {
+                alert("Gagal mengubah status: " + error.message);
+            } else { 
+                isTapelLocked = !isTapelLocked; 
+                updateLockUI(); 
+                alert(`✅ Akses input nilai berhasil di-${isTapelLocked ? 'kunci' : 'buka'}.`); 
+            }
+            btn.disabled = false;
+        });
+
+        // --- FITUR BACKUP DATABASE KE EXCEL ---
+        document.getElementById('btn-backup-db').addEventListener('click', async (e) => {
+            const btn = e.target; const textAsli = btn.textContent;
+            btn.textContent = '⏳ Memproses pengunduhan data... Mohon tunggu!'; btn.disabled = true;
+            try {
+                const wb = XLSX.utils.book_new();
+                const daftarTabel = ['tahun_ajaran', 'kelas', 'siswa', 'anggota_kelas', 'mata_pelajaran', 'pengampu_mapel', 'ekstrakurikuler', 'proyek_p5', 'nilai_akademik', 'nilai_p5', 'nilai_ekskul', 'absensi_catatan'];
+                for (let tabel of daftarTabel) {
+                    const { data, error } = await supabase.from(tabel).select('*').limit(10000);
+                    if (error) throw error;
+                    const sheetData = (data && data.length > 0) ? data : [{ "Info": "Belum ada data." }];
+                    const ws = XLSX.utils.json_to_sheet(sheetData);
+                    XLSX.utils.book_append_sheet(wb, ws, tabel);
+                }
+                const tglHariIni = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `Backup_Database_eRapor_${tglHariIni}.xlsx`);
+                alert("✅ Backup Database berhasil diunduh!");
+            } catch (err) { alert("❌ Terjadi kesalahan saat membackup data: " + err.message); } 
+            finally { btn.textContent = textAsli; btn.disabled = false; }
+        });
+
+        // --- FUNGSI BAWAAN ADMIN LAINNYA ---
+        async function loadUsers() { const selectUser = document.getElementById('select-user'); const selectKoordinator = document.getElementById('koordinator_id'); const selectPembina = document.getElementById('pembina_id'); const selectWalas = document.getElementById('walas_id'); const { data } = await supabase.from('profiles').select('id, full_name, roles').order('full_name'); if (data) { allUsersData = data; selectUser.innerHTML = '<option value="">-- Pilih Akun --</option>'; selectKoordinator.innerHTML = '<option value="">-- Pilih Koordinator P5 --</option>'; selectPembina.innerHTML = '<option value="">-- Pilih Pembina Ekskul --</option>'; selectWalas.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>'; data.forEach(user => { let roleString = user.roles ? user.roles.join(', ') : 'Belum Ada Role'; selectUser.innerHTML += `<option value="${user.id}">${user.full_name} (${roleString})</option>`; selectKoordinator.innerHTML += `<option value="${user.id}">${user.full_name}</option>`; selectPembina.innerHTML += `<option value="${user.id}">${user.full_name}</option>`; if(user.roles && user.roles.includes('wali_kelas')) selectWalas.innerHTML += `<option value="${user.id}">${user.full_name}</option>`; }); } }
+        document.getElementById('select-user').addEventListener('change', (e) => { const userId = e.target.value; document.querySelectorAll('input[name="role_cek"]').forEach(cb => cb.checked = false); if (!userId) return; const user = allUsersData.find(u => u.id === userId); if (user && user.roles) user.roles.forEach(role => { const cb = document.querySelector(`input[name="role_cek"][value="${role}"]`); if (cb) cb.checked = true; }); });
+        async function loadDataPlotting() { const plotKelas = document.getElementById('plot_kelas'); const listSiswa = document.getElementById('list-siswa'); const cetakKelas = document.getElementById('filter-kelas-cetak'); const { data: kelas } = await supabase.from('kelas').select('id, nama_kelas').order('nama_kelas'); if (kelas) { plotKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; cetakKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>'; kelas.forEach(k => { plotKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; cetakKelas.innerHTML += `<option value="${k.id}">${k.nama_kelas}</option>`; }); } const { data: siswa } = await supabase.from('siswa').select('id, nama_lengkap, nisn, agama').order('nama_lengkap'); if (siswa) { listSiswa.innerHTML = ''; siswa.forEach(s => { listSiswa.innerHTML += `<label class="checkbox-item"><input type="checkbox" name="siswa_cek" value="${s.id}"> ${s.nama_lengkap} <span style="color:var(--text-muted); font-size:0.85rem;">(${s.nisn} - ${s.agama || 'Islam'})</span></label>`; }); } }
+        async function loadMasterDataDropdowns() { const selectTapel = document.getElementById('p5_tahun_ajaran'); const { data: tapel } = await supabase.from('tahun_ajaran').select('id, nama, semester').order('nama'); if (tapel) { selectTapel.innerHTML = '<option value="">-- Pilih Tahun Ajaran --</option>'; tapel.forEach(t => selectTapel.innerHTML += `<option value="${t.id}">${t.nama} (Smt ${t.semester})</option>`); } }
         document.getElementById('form-role').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('select-user').value; const checkboxes = document.querySelectorAll('input[name="role_cek"]:checked'); let selectedRoles = []; checkboxes.forEach(cb => selectedRoles.push(cb.value)); if (selectedRoles.length === 0) return alert("⚠️ Pilih minimal satu hak akses!"); const btn = e.target.querySelector('button'); btn.textContent = 'Memproses...'; const { error } = await supabase.from('profiles').update({ roles: selectedRoles }).eq('id', id); if (error) alert("Error: " + error.message); else { alert("✅ Hak Akses berhasil diperbarui!"); loadUsers(); } btn.textContent = '💾 Update Hak Akses'; });
         document.getElementById('form-siswa').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('siswa').insert([{ nisn: document.getElementById('nisn').value, nama_lengkap: document.getElementById('nama_siswa').value, jenis_kelamin: document.getElementById('jk_siswa').value, agama: document.getElementById('agama_siswa').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } });
         
-        // --- FITUR BACKUP DATABASE TOTAL KE EXCEL ---
-        document.getElementById('btn-backup-db').addEventListener('click', async (e) => {
-            const btn = e.target;
-            const textAsli = btn.textContent;
-            
-            // Ubah tombol jadi status loading
-            btn.textContent = '⏳ Memproses pengunduhan data... Mohon tunggu!';
-            btn.disabled = true;
-
-            try {
-                // 1. Buat Buku Kerja Excel (Workbook) Baru
-                const wb = XLSX.utils.book_new();
-
-                // 2. Daftar Tabel Database yang ingin di-backup
-                const daftarTabel = [
-                    'tahun_ajaran', 'kelas', 'siswa', 'anggota_kelas', 
-                    'mata_pelajaran', 'pengampu_mapel', 'ekstrakurikuler', 'proyek_p5',
-                    'nilai_akademik', 'nilai_p5', 'nilai_ekskul', 'absensi_catatan'
-                ];
-
-                // 3. Tarik data dari setiap tabel secara bergantian
-                for (let tabel of daftarTabel) {
-                    // Limit dibuat besar (10.000) agar semua nilai siswa se-sekolah terbawa
-                    const { data, error } = await supabase.from(tabel).select('*').limit(10000);
-                    
-                    if (error) throw error;
-
-                    // Jika tabel kosong, beri baris keterangan agar sheet tidak error
-                    const sheetData = (data && data.length > 0) ? data : [{ "Info": "Belum ada data di tabel ini." }];
-                    
-                    // Ubah JSON Supabase menjadi Sheet Excel
-                    const ws = XLSX.utils.json_to_sheet(sheetData);
-                    
-                    // Masukkan Sheet ke dalam Workbook dengan nama tabelnya
-                    XLSX.utils.book_append_sheet(wb, ws, tabel);
-                }
-
-                // 4. Generate Nama File dengan Tanggal Hari Ini (Format: YYYY-MM-DD)
-                const tglHariIni = new Date().toISOString().slice(0, 10);
-                const namaFile = `Backup_Database_eRapor_${tglHariIni}.xlsx`;
-
-                // 5. Unduh file Excel-nya
-                XLSX.writeFile(wb, namaFile);
-
-                alert("✅ Backup Database berhasil diunduh!");
-                
-            } catch (err) {
-                console.error("Error Backup:", err);
-                alert("❌ Terjadi kesalahan saat membackup data: " + err.message);
-            } finally {
-                // Kembalikan tombol ke bentuk semula
-                btn.textContent = textAsli;
-                btn.disabled = false;
-            }
-        });
+        document.getElementById('btn-download-template-siswa').addEventListener('click', () => { const header = ["nisn", "nama", "jk", "agama", "tempat_lahir", "tanggal_lahir", "status_keluarga", "anak_ke", "alamat_siswa", "no_telp_siswa", "sekolah_asal", "nama_ayah", "nama_ibu", "alamat_ortu", "no_telp_ortu", "pekerjaan_ayah", "pekerjaan_ibu", "nama_wali", "pekerjaan_wali", "alamat_wali", "kelas"]; const csvData = header.join(",") + "\n" + "12345678,Budi Santoso,L,Islam,Makassar,2008-12-30,Anak Kandung,1,Jl. Pettarani,081234567,SDN 1,Pak Santoso,Ibu Ana,Jl. Pettarani,081234567,PNS,Ibu Rumah Tangga,,,,-,7A"; const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "Template_Import_Siswa_Lengkap.csv"; link.click(); });
+        document.getElementById('btn-import-csv').addEventListener('click', async () => { const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses...'; Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; for (let row of results.data) { try { if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); const payloadSiswa = { nisn: row.nisn, nama_lengkap: row.nama, jenis_kelamin: row.jk.toUpperCase(), agama: row.agama || 'Islam', tempat_lahir: row.tempat_lahir || null, tanggal_lahir: row.tanggal_lahir || null, status_keluarga: row.status_keluarga || 'Anak Kandung', anak_ke: row.anak_ke || null, alamat_siswa: row.alamat_siswa || null, no_telp_siswa: row.no_telp_siswa || null, sekolah_asal: row.sekolah_asal || null, nama_ayah: row.nama_ayah || null, nama_ibu: row.nama_ibu || null, alamat_ortu: row.alamat_ortu || null, no_telp_ortu: row.no_telp_ortu || null, pekerjaan_ayah: row.pekerjaan_ayah || null, pekerjaan_ibu: row.pekerjaan_ibu || null, nama_wali: row.nama_wali || null, pekerjaan_wali: row.pekerjaan_wali || null, alamat_wali: row.alamat_wali || null }; const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([payloadSiswa]).select('id').single(); if (err) { gagal++; continue; } if (kelasTujuan && siswaBaru) { await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); } sukses++; } catch (e) { gagal++; } } statusText.style.color = 'green'; statusText.textContent = `✅ Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; loadDataPlotting(); } }); });
         
-        // --- DOWNLOAD TEMPLATE CSV LENGKAP ---
-        document.getElementById('btn-download-template-siswa').addEventListener('click', () => {
-            const header = ["nisn", "nama", "jk", "agama", "tempat_lahir", "tanggal_lahir", "status_keluarga", "anak_ke", "alamat_siswa", "no_telp_siswa", "sekolah_asal", "nama_ayah", "nama_ibu", "alamat_ortu", "no_telp_ortu", "pekerjaan_ayah", "pekerjaan_ibu", "nama_wali", "pekerjaan_wali", "alamat_wali", "kelas"];
-            const csvData = header.join(",") + "\n" + "12345678,Budi Santoso,L,Islam,Makassar,2008-12-30,Anak Kandung,1,Jl. Pettarani,081234567,SDN 1,Pak Santoso,Ibu Ana,Jl. Pettarani,081234567,PNS,Ibu Rumah Tangga,,,,-,7A";
-            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Template_Import_Siswa_Lengkap.csv";
-            link.click();
-        });
-
-        // --- IMPORT CSV LENGKAP ---
-        document.getElementById('btn-import-csv').addEventListener('click', async () => { 
-            const fileInput = document.getElementById('file-csv'); const statusText = document.getElementById('status-import'); 
-            if (!fileInput.files.length) return alert("Pilih file CSV!"); statusText.style.color = 'blue'; statusText.textContent = '⏳ Sedang memproses...'; 
-            
-            Papa.parse(fileInput.files[0], { header: true, skipEmptyLines: true, complete: async function(results) { 
-                const { data: dbKelas } = await supabase.from('kelas').select('id, nama_kelas'); let sukses = 0, gagal = 0; 
-                
-                for (let row of results.data) { 
-                    try { 
-                        if(!row.nisn || !row.nama || !row.jk || !row.kelas) { gagal++; continue; } 
-                        const kelasTujuan = dbKelas.find(k => k.nama_kelas.toUpperCase() === row.kelas.toUpperCase()); 
-                        
-                        // Payload lengkap sesuai database
-                        const payloadSiswa = { 
-                            nisn: row.nisn, 
-                            nama_lengkap: row.nama, 
-                            jenis_kelamin: row.jk.toUpperCase(), 
-                            agama: row.agama || 'Islam',
-                            tempat_lahir: row.tempat_lahir || null,
-                            tanggal_lahir: row.tanggal_lahir || null,
-                            status_keluarga: row.status_keluarga || 'Anak Kandung',
-                            anak_ke: row.anak_ke || null,
-                            alamat_siswa: row.alamat_siswa || null,
-                            no_telp_siswa: row.no_telp_siswa || null,
-                            sekolah_asal: row.sekolah_asal || null,
-                            nama_ayah: row.nama_ayah || null,
-                            nama_ibu: row.nama_ibu || null,
-                            alamat_ortu: row.alamat_ortu || null,
-                            no_telp_ortu: row.no_telp_ortu || null,
-                            pekerjaan_ayah: row.pekerjaan_ayah || null,
-                            pekerjaan_ibu: row.pekerjaan_ibu || null,
-                            nama_wali: row.nama_wali || null,
-                            pekerjaan_wali: row.pekerjaan_wali || null,
-                            alamat_wali: row.alamat_wali || null
-                        };
-
-                        const { data: siswaBaru, error: err } = await supabase.from('siswa').insert([payloadSiswa]).select('id').single(); 
-                        if (err) { gagal++; continue; } 
-                        
-                        if (kelasTujuan && siswaBaru) {
-                            await supabase.from('anggota_kelas').insert([{ siswa_id: siswaBaru.id, kelas_id: kelasTujuan.id }]); 
-                        }
-                        sukses++; 
-                    } catch (e) { gagal++; } 
-                } 
-                statusText.style.color = 'green'; statusText.textContent = `✅ Selesai! Sukses: ${sukses} | Gagal/Ganda: ${gagal}`; 
-                loadDataPlotting(); 
-            } }); 
-        });
-
         document.getElementById('form-anggota-kelas').addEventListener('submit', async (e) => { e.preventDefault(); const kelasId = document.getElementById('plot_kelas').value; const checkboxes = document.querySelectorAll('input[name="siswa_cek"]:checked'); if (checkboxes.length === 0) return alert("⚠️ Centang minimal satu siswa!"); let errorCount = 0; for (let cb of checkboxes) { const { error } = await supabase.from('anggota_kelas').insert([{ siswa_id: cb.value, kelas_id: kelasId }]); if (error && error.code !== '23505') errorCount++; } if (errorCount > 0) alert(`⚠️ Ada ${errorCount} data gagal disimpan.`); else { alert("✅ Siswa berhasil masuk kelas!"); checkboxes.forEach(cb => cb.checked = false); } });
-        
-        // --- SIMPAN TAHUN AJARAN DENGAN TANGGAL CETAK ---
-        document.getElementById('form-tapel').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            await supabase.from('tahun_ajaran').insert([{ 
-                nama: document.getElementById('nama_tapel').value, 
-                semester: document.getElementById('smt_tapel').value, 
-                tanggal_cetak: document.getElementById('tgl_cetak_admin').value, // Simpan tanggal cetak ke DB
-                is_active: true 
-            }]); 
-            alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); 
-        });
-
+        document.getElementById('form-tapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('tahun_ajaran').insert([{ nama: document.getElementById('nama_tapel').value, semester: document.getElementById('smt_tapel').value, tanggal_cetak: document.getElementById('tgl_cetak_admin').value, is_active: true }]); alert("✅ Tersimpan!"); e.target.reset(); loadMasterDataDropdowns(); loadLockStatus();});
         document.getElementById('form-kelas').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('kelas').insert([{ nama_kelas: document.getElementById('nama_kelas').value, tingkat: document.getElementById('tingkat_kelas').value, wali_kelas_id: document.getElementById('walas_id').value || null }]); alert("✅ Kelas & Wali Kelas Tersimpan!"); e.target.reset(); loadDataPlotting(); });
         document.getElementById('form-mapel').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('mata_pelajaran').insert([{ kode_mapel: document.getElementById('kode_mapel').value, nama_mapel: document.getElementById('nama_mapel').value }]); alert("✅ Tersimpan!"); e.target.reset(); });
         document.getElementById('form-ekskul').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('ekstrakurikuler').insert([{ nama_ekskul: document.getElementById('nama_ekskul').value, pembina_id: document.getElementById('pembina_id').value }]); if(error) alert("Error: " + error.message); else { alert("✅ Ekstrakurikuler tersimpan!"); e.target.reset(); }});
@@ -384,4 +310,3 @@
     </script>
 </body>
 </html>
-
