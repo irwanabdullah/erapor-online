@@ -6,6 +6,8 @@
     <title>Dasbor Admin | e-Rapor Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #2563eb; --primary-dark: #1d4ed8; --sidebar-bg: #1e3a8a; --sidebar-hover: #3b82f6; --bg-color: #f3f4f6; --text-main: #1f2937; --text-muted: #6b7280; --border-color: #e5e7eb; --white: #ffffff; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
         body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
@@ -70,6 +72,12 @@
                 <div class="card" style="max-width: 700px;">
                     <div class="card-header"><h3>Selamat Datang di Panel Admin e-Rapor</h3></div>
                     <p style="color: var(--text-muted); line-height: 1.6;">Ini adalah pusat kendali aplikasi e-Rapor sekolah Anda.</p>
+                </div>
+
+                <div class="card" style="max-width: 700px; border-top: 3px solid var(--success);">
+                    <div class="card-header"><h3 style="color: var(--success);">💾 Backup Database Total</h3></div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0;">Unduh seluruh data sekolah (Data Siswa, Kelas, Mata Pelajaran, hingga Nilai) ke dalam satu file Excel (.xlsx) bersusun. Gunakan fitur ini secara berkala sebagai arsip cadangan.</p>
+                    <button id="btn-backup-db" class="btn btn-success" style="width: auto; padding: 12px 20px; font-size: 0.95rem;">⬇️ Mulai Download Backup (Excel)</button>
                 </div>
             </div>
 
@@ -233,6 +241,62 @@
         document.getElementById('form-role').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('select-user').value; const checkboxes = document.querySelectorAll('input[name="role_cek"]:checked'); let selectedRoles = []; checkboxes.forEach(cb => selectedRoles.push(cb.value)); if (selectedRoles.length === 0) return alert("⚠️ Pilih minimal satu hak akses!"); const btn = e.target.querySelector('button'); btn.textContent = 'Memproses...'; const { error } = await supabase.from('profiles').update({ roles: selectedRoles }).eq('id', id); if (error) alert("Error: " + error.message); else { alert("✅ Hak Akses berhasil diperbarui!"); loadUsers(); } btn.textContent = '💾 Update Hak Akses'; });
         document.getElementById('form-siswa').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabase.from('siswa').insert([{ nisn: document.getElementById('nisn').value, nama_lengkap: document.getElementById('nama_siswa').value, jenis_kelamin: document.getElementById('jk_siswa').value, agama: document.getElementById('agama_siswa').value }]); if (error) alert("Error: " + error.message); else { alert("✅ Siswa tersimpan!"); e.target.reset(); loadDataPlotting(); } });
         
+        // --- FITUR BACKUP DATABASE TOTAL KE EXCEL ---
+        document.getElementById('btn-backup-db').addEventListener('click', async (e) => {
+            const btn = e.target;
+            const textAsli = btn.textContent;
+            
+            // Ubah tombol jadi status loading
+            btn.textContent = '⏳ Memproses pengunduhan data... Mohon tunggu!';
+            btn.disabled = true;
+
+            try {
+                // 1. Buat Buku Kerja Excel (Workbook) Baru
+                const wb = XLSX.utils.book_new();
+
+                // 2. Daftar Tabel Database yang ingin di-backup
+                const daftarTabel = [
+                    'tahun_ajaran', 'kelas', 'siswa', 'anggota_kelas', 
+                    'mata_pelajaran', 'pengampu_mapel', 'ekstrakurikuler', 'proyek_p5',
+                    'nilai_akademik', 'nilai_p5', 'nilai_ekskul', 'absensi_catatan'
+                ];
+
+                // 3. Tarik data dari setiap tabel secara bergantian
+                for (let tabel of daftarTabel) {
+                    // Limit dibuat besar (10.000) agar semua nilai siswa se-sekolah terbawa
+                    const { data, error } = await supabase.from(tabel).select('*').limit(10000);
+                    
+                    if (error) throw error;
+
+                    // Jika tabel kosong, beri baris keterangan agar sheet tidak error
+                    const sheetData = (data && data.length > 0) ? data : [{ "Info": "Belum ada data di tabel ini." }];
+                    
+                    // Ubah JSON Supabase menjadi Sheet Excel
+                    const ws = XLSX.utils.json_to_sheet(sheetData);
+                    
+                    // Masukkan Sheet ke dalam Workbook dengan nama tabelnya
+                    XLSX.utils.book_append_sheet(wb, ws, tabel);
+                }
+
+                // 4. Generate Nama File dengan Tanggal Hari Ini (Format: YYYY-MM-DD)
+                const tglHariIni = new Date().toISOString().slice(0, 10);
+                const namaFile = `Backup_Database_eRapor_${tglHariIni}.xlsx`;
+
+                // 5. Unduh file Excel-nya
+                XLSX.writeFile(wb, namaFile);
+
+                alert("✅ Backup Database berhasil diunduh!");
+                
+            } catch (err) {
+                console.error("Error Backup:", err);
+                alert("❌ Terjadi kesalahan saat membackup data: " + err.message);
+            } finally {
+                // Kembalikan tombol ke bentuk semula
+                btn.textContent = textAsli;
+                btn.disabled = false;
+            }
+        });
+        
         // --- DOWNLOAD TEMPLATE CSV LENGKAP ---
         document.getElementById('btn-download-template-siswa').addEventListener('click', () => {
             const header = ["nisn", "nama", "jk", "agama", "tempat_lahir", "tanggal_lahir", "status_keluarga", "anak_ke", "alamat_siswa", "no_telp_siswa", "sekolah_asal", "nama_ayah", "nama_ibu", "alamat_ortu", "no_telp_ortu", "pekerjaan_ayah", "pekerjaan_ibu", "nama_wali", "pekerjaan_wali", "alamat_wali", "kelas"];
@@ -320,3 +384,4 @@
     </script>
 </body>
 </html>
+
