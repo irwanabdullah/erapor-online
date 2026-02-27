@@ -112,6 +112,18 @@
             const id = params.get('id');
             if(!id) return;
 
+             // 0. CEK SEMESTER AKTIF & TANGGAL CETAK DARI DATABASE
+            let isGenap = false;
+            const { data: tapelTerbaru } = await supabase.from('tahun_ajaran').select('*').order('id', { ascending: false }).limit(1).single();
+            if(tapelTerbaru) {
+                document.getElementById('tapel-text').textContent = tapelTerbaru.nama;
+                if(tapelTerbaru.semester == '2') {
+                    document.getElementById('semester-text').textContent = 'Genap';
+                    isGenap = true;
+                } else {
+                    document.getElementById('semester-text').textContent = 'Ganjil';
+                }
+
             // 1. Ambil Data Identitas Siswa
             const {data: agt} = await supabase.from('anggota_kelas').select('siswa(nama_lengkap, nisn), kelas(nama_kelas)').eq('id', id).single();
             if(agt) {
@@ -252,6 +264,7 @@
     </script>
 </body>
 </html>
+
 
 
 
